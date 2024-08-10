@@ -1,6 +1,6 @@
 # 🛠️ QROA: A Black-Box Query-Response Optimization Attack on LLMs
 
-This is the official implementation of the Query-Response Optimization Attack (QROA). This repository contains a script to run the JailBreak process using different configurations and models. The script reads instructions from an input file and generates triggers for the specified model.
+QROA, or Query-Response Optimization Attack, is an innovative and robust strategy designed to explore and exploit vulnerabilities in Large Language Models (LLMs) through black-box interactions. This method leverages optimized triggers embedded within benign-looking instructions to manipulate LLMs into generating harmful content. Developed without the need for direct model access or internal data insights, QROA operates solely via the standard input-output interface provided by LLMs. The attack's underlying techniques are inspired by advances in deep Q-learning, allowing dynamic token adjustments to maximize a reward function that aligns with the attacker's goals.
 
 This Script is the official implementation of the article "*QROA: A Black-Box Query-Response Optimization Attack on LLMs*"
 
