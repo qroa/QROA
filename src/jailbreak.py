@@ -67,7 +67,7 @@ class JailBreak:
             if os.path.exists(file_path):
                 return pd.read_csv(file_path)
             else:
-                return pd.DataFrame
+                return pd.DataFrame()
 
         except Exception as e:
             print(e)
