@@ -1,3 +1,5 @@
+import random 
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -112,6 +114,13 @@ class AcquisitionFunction(nn.Module):
             top_indices = (
                 torch.topk(predictions, num_samples).indices.view(-1).int()
             )
+
+            # test random selection 
+            array_int = range(0, len(predictions))
+            array_int = list(array_int)
+            random.shuffle(array_int)
+            array_int = array_int[:num_samples]
+            top_indices = torch.tensor(array_int).to(self.device)
 
             top_inputs = inputs[top_indices, :]
             top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
