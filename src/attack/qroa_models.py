@@ -33,7 +33,7 @@ class SurrogateModel(nn.Module):
 
 
         self.conv1 = nn.Conv1d(self.emb_dim, 64, kernel_size=1)
-        self.fc1 = nn.Linear(32*self.len_coordinates, 128)
+        self.fc1 = nn.Linear(64*self.len_coordinates, 128)
         self.fc2 = nn.Linear(128, 32)
         self.fc3 = nn.Linear(32, 1)
 
