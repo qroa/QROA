@@ -3,7 +3,6 @@ import random
 from tqdm import tqdm
 
 import torch
-import nltk
 from torch.nn import  MSELoss
 import pandas as pd
 import numpy as np
@@ -14,9 +13,6 @@ from src.attack.score_function import scoring_function_factory
 from src.attack.qroa_models import SurrogateModel, AcquisitionFunction
 from src.utils import calculate_ucb, calculate_log_prob
 from src.global_constants import PERPLEXITY_MODEL_NAME
-
-# Download the word list if not already present
-nltk.download("words")
 
 
 class TriggerGenerator:

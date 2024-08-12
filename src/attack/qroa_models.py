@@ -41,8 +41,9 @@ class SurrogateModel(nn.Module):
 
         str_emb = self.emb[x]
 
-        # x = str_emb.transpose(1, 2)
         x = str_emb
+
+        # x = str_emb.transpose(1, 2)
         # x = F.relu(self.conv1(x))
         x = torch.flatten(x, start_dim=1)
         x = self.fc1(x)

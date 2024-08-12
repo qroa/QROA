@@ -1,6 +1,5 @@
 import os 
 from tqdm import tqdm
-import nltk
 import json
 
 from src.models.models_factory import get_model
@@ -9,9 +8,6 @@ from src.attack.trigger_generator import TriggerGenerator, TriggerValidator
 import torch
 import pandas as pd
 from transformers import AutoTokenizer, AutoModelForCausalLM
-
-# Download the word list if not already present
-nltk.download("words")
 
 
 class JailBreak:
