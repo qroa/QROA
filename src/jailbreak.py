@@ -69,7 +69,8 @@ class JailBreak:
             else:
                 return pd.DataFrame
 
-        except pd.errors.EmptyDataError:
+        except Exception as e:
+            print(e)
             return pd.DataFrame()
     
     def run(self, instructions):
