@@ -2,7 +2,7 @@ from typing import List
 import torch 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import numpy as np
-
+import pandas as pd
 
 def calculate_log_prob(texts: List[str], 
                        tokenizer: AutoTokenizer, 

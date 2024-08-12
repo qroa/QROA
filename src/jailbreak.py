@@ -61,6 +61,17 @@ class JailBreak:
                 return json.load(f)
         return {}
     
+    def _read_csv(self, file_path):
+        """Reads a CSV file into a DataFrame. Returns an empty DataFrame if the file is empty or only contains headers."""
+        try:
+            if os.path.exists(file_path):
+                return pd.read_csv(file_path)
+            else:
+                return pd.DataFrame
+
+        except pd.errors.EmptyDataError:
+            return pd.DataFrame()
+    
     def run(self, instructions):
         
         print()
@@ -69,16 +80,9 @@ class JailBreak:
 
         triggers = self._load_json(self.triggers_path)
         triggers_validate = self._load_json(self.triggers_validate_path)
-    
-        if os.path.exists(self.logging_generator_path_csv):
-            logging_generator = pd.read_csv(self.logging_generator_path_csv)
-        else: 
-            logging_generator = pd.DataFrame()
 
-        if os.path.exists(self.logging_validator_path_csv) and os.path.getsize(self.logging_validator_path_csv) > 0:
-            logging_validator = pd.read_csv(self.logging_validator_path_csv)
-        else: 
-            logging_validator = pd.DataFrame()
+        logging_generator = self._read_csv(self.logging_generator_path_csv)
+        logging_validator = self._read_csv(self.logging_generator_path_csv)
     
         for instruction in instructions: 
             trigger_generator = TriggerGenerator(self.model, 
