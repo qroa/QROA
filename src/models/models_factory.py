@@ -66,7 +66,7 @@ def get_model(model_name: str,
             top_p=top_p,
             apply_defense_methods=apply_defense_methods
         )
-        model.model_name = "gpt-4-turbo-0613"
+        model.model_name = "gpt-4-0613"
         return model
     elif model_name.lower() == 'mistral':
         return MistralModel(
