@@ -106,7 +106,7 @@ class HarmEvalPreplexityScoring(ScoringFunction):
         self.sie_model = AutoModelForSequenceClassification.from_pretrained(self.hf_model_name).eval().to(device)
         self.sie_tokenizer = AutoTokenizer.from_pretrained(self.hf_model_name)
         self.preplixity_tokenizer = AutoTokenizer.from_pretrained(PERPLEXITY_MODEL_NAME)
-        self.preplixity_model = AutoModelForCausalLM.from_pretrained(PERPLEXITY_MODEL_NAME).to(self.device)
+        self.preplixity_model = AutoModelForCausalLM.from_pretrained(PERPLEXITY_MODEL_NAME).eval().to(self.device)
         self.preplixity_tokenizer.pad_token_id = self.preplixity_tokenizer.unk_token_id
         
     def score(self, 
