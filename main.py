@@ -47,7 +47,7 @@ def main(input_file, auth_token):
     # model = "vicuna_hf"      -> https://huggingface.co/lmsys/vicuna-7b-v1.3
     # model = "mistral_hf"     -> https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1
     # model = "falcon_hf"      -> https://huggingface.co/tiiuae/falcon-7b-instruct
-    # model = "openai"         -> gpt-3.5-turbo-0613
+    # model = "openai-0613"    -> gpt-3.5-turbo-0613
     # model = "mistral"        -> mistral-next-latest
     
     # Define configuration

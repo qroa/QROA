@@ -209,7 +209,6 @@ class OpenaiModel(Model):
     ):
         super().__init__(auth_token, device, system_prompt, apply_defense_methods)
         self.client = OpenAI(api_key=auth_token)
-        self.model_name = "gpt-3.5-turbo-0613"
         self.max_parallelism = MAX_PARALLELISM_LLM_MODELS
         self.temperature = temperature
         self.top_p = top_p

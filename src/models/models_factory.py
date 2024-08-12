@@ -35,8 +35,8 @@ def get_model(model_name: str,
             temperature=temperature,
             top_p=top_p,
             apply_defense_methods=apply_defense_methods)
-    elif model_name.lower() == 'openai':
-        return OpenaiModel(
+    elif model_name.lower() == 'openai-0613':
+        model =  OpenaiModel(
             auth_token=auth_token, 
             device=device, 
             system_prompt=system_prompt, 
@@ -44,6 +44,19 @@ def get_model(model_name: str,
             top_p=top_p,
             apply_defense_methods=apply_defense_methods
         )
+        model.model_name = "gpt-3.5-turbo-0613"
+        return model
+    elif model_name.lower() == 'openai-1106':
+        model =  OpenaiModel(
+            auth_token=auth_token, 
+            device=device, 
+            system_prompt=system_prompt, 
+            temperature=temperature,
+            top_p=top_p,
+            apply_defense_methods=apply_defense_methods
+        )
+        model.model_name = "gpt-3.5-turbo-1106"
+        return model
     elif model_name.lower() == 'mistral':
         return MistralModel(
             auth_token=auth_token, 
