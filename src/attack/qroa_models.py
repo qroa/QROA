@@ -37,7 +37,7 @@ class SurrogateModel(nn.Module):
         self.fc2 = nn.Linear(128, 32)
         self.fc3 = nn.Linear(32, 1)
 
-        # self.fc1 = nn.Linear(self.emb_dim*self.len_coordinates, 128)
+        self.fc1 = nn.Linear(self.emb_dim*self.len_coordinates, 128)
 
     def forward(self, x):
 
