@@ -35,16 +35,16 @@ class SurrogateModel(nn.Module):
         self.fc2 = nn.Linear(128, 32)
         self.fc3 = nn.Linear(32, 1)
 
-        self.fc1 = nn.Linear(self.emb_dim*self.len_coordinates, 128)
+        # self.fc1 = nn.Linear(self.emb_dim*self.len_coordinates, 128)
 
     def forward(self, x):
 
         str_emb = self.emb[x]
 
-        x = str_emb
-
-        # x = str_emb.transpose(1, 2)
-        # x = F.relu(self.conv1(x))
+        # x = str_emb
+        x = str_emb.transpose(1, 2)
+        x = F.relu(self.conv1(x))
+        
         x = torch.flatten(x, start_dim=1)
         x = self.fc1(x)
         x = F.relu(x)
