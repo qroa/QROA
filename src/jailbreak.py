@@ -75,7 +75,7 @@ class JailBreak:
         else: 
             logging_generator = pd.DataFrame()
 
-        if os.path.exists(self.logging_validator_path_csv):
+        if os.path.exists(self.logging_validator_path_csv) and os.path.getsize(self.logging_validator_path_csv) > 0:
             logging_validator = pd.read_csv(self.logging_validator_path_csv)
         else: 
             logging_validator = pd.DataFrame()
