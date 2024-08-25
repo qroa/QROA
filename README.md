@@ -41,7 +41,7 @@ Large Language Models (LLMs) have recently gained popularity, but they also rais
 ## 🚀 Usage
 
 
-### Running the Attack
+### ⚔️ Running the Attack
 
 To run the script, you need to provide the path to the input file containing the instructions. The input file should be in CSV format.
 Run the script from the command line by specifying the path to the instruction file and the authentication token:
@@ -96,7 +96,7 @@ Logs for generation and validation processes are also available:
 - **Trigger Generation Logs:** `./logs/[MODEL_NAME]/logging_generator.csv` : Logs the process of trigger generation.
 - **Trigger Validation Logs:** `./logs/[MODEL_NAME]/logging_validator.csv` : Logs the process of validating the triggers with the z test.
 
-## 🔧Configuration Settings
+## 🔧 Configuration Settings
 
 The following table outlines the configuration settings for the JailBreak process. Each parameter plays a role in the setup and execution of the process:
 
