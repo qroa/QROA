@@ -52,6 +52,20 @@ python main.py data/instructions.csv [API_AUTH_TOKEN]
 
 Replace `instructions.csv` with the path to your text file containing the instructions, and `API_AUTH_TOKEN` with the actual authentication token.
 
+### Supported Models
+
+You can test the following models with QROA:
+
+- **Llama2-chat** (`llama2_chat_hf`)
+- **Llama2** (`llama2_hf`)
+- **Vicuna** (`vicuna_hf`)
+- **Mistral** (`mistral_hf`)
+- **Falcon** (`falcon_hf`)
+- **OpenAI GPT** (`openai-0613`)
+- **Mistral Next** (`mistral`)
+
+Simply change the `model` parameter in the `main` function to the desired model.
+
 ### 🧪 Demo and Testing Model Generation
 - **Notebook Demo:** Run `demo.ipynb` to see a demonstration of the process.
 - **Notebook Analysis Experiement:** Run `analysis.ipynb` to analyse results and calculate metrics value (ASR).
