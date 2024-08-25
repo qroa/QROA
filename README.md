@@ -52,7 +52,7 @@ python main.py data/instructions.csv [API_AUTH_TOKEN]
 
 Replace `instructions.csv` with the path to your text file containing the instructions, and `API_AUTH_TOKEN` with the actual authentication token.
 
-### Supported Models
+### 🧠 Supported Models
 
 You can test the following models with QROA:
 
