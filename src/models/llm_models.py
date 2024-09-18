@@ -154,7 +154,7 @@ class MistralModel(Model):
         super().__init__(auth_token, device, system_prompt, apply_defense_methods)
 
         self.client = MistralClient(api_key=auth_token)
-        self.model_name = "mistral-next-latest"
+        self.model_name = "mistral-medium"
 
     def internal_generate(self, prompts, max_tokens):
         """
