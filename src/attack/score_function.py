@@ -137,6 +137,7 @@ class HarmEvalPreplexityScoring(ScoringFunction):
                                            self.preplixity_model,
                                            self.device)
             exp_log_score = torch.exp(log_score)
+            exp_log_score = torch.clamp(exp_log_score, max=1)
             # exp_log_score = torch.clamp(exp_log_score, max=0.001)
 
             score = (score + 0.5*exp_log_score)
