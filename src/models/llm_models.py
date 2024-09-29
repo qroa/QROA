@@ -143,18 +143,24 @@ class MistralModel(Model):
         system_prompt (str): The system prompt to use.
         apply_defense_methods (bool): Whether to apply defense methods during text generation.
     """
+    
+    model_details = {
+        "mistral-large-latest",
+        "mistral-small-latest"}
+
 
     def __init__(
         self, 
         auth_token: str, 
         device: str,
         system_prompt: str,
+        model_name: str,
         apply_defense_methods: bool
     ):
         super().__init__(auth_token, device, system_prompt, apply_defense_methods)
 
         self.client = MistralClient(api_key=auth_token)
-        self.model_name = "mistral-medium"
+        self.model_name = model_name
 
     def internal_generate(self, prompts, max_tokens):
         """
@@ -198,11 +204,17 @@ class OpenaiModel(Model):
         apply_defense_methods (bool): Whether to apply defense methods during text generation.
     """
 
+    model_details = {
+        "gpt-3.5-turbo-0613",
+        "gpt-3.5-turbo-1106",
+        "gpt-4-0613"}
+    
     def __init__(
         self, 
         auth_token: str, 
         device: str, 
         system_prompt: str,
+        model_name: str,
         temperature: float,
         top_p: float,
         apply_defense_methods: bool,
@@ -212,6 +224,7 @@ class OpenaiModel(Model):
         self.max_parallelism = MAX_PARALLELISM_LLM_MODELS
         self.temperature = temperature
         self.top_p = top_p
+        self.model_name = self.model_name
 
     def internal_generate(self, prompts, max_tokens):
         """

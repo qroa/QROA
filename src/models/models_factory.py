@@ -25,54 +25,33 @@ def get_model(model_name: str,
     Raises:
         ValueError: If the model_name is unknown.
     """
-
-    if model_name.lower() in HuggingFaceModel.model_details:
+    model_name = model_name.lower()
+    if model_name in HuggingFaceModel.model_details:
         return HuggingFaceModel(
             auth_token=auth_token,
             device=device, 
             system_prompt=system_prompt, 
-            model_name=model_name.lower(),
+            model_name=model_name,
             temperature=temperature,
             top_p=top_p,
             apply_defense_methods=apply_defense_methods)
-    elif model_name.lower() == 'openai-0613':
+    elif model_name in OpenaiModel.model_details:
         model =  OpenaiModel(
             auth_token=auth_token, 
             device=device, 
             system_prompt=system_prompt, 
+            model_name=model_name,
             temperature=temperature,
             top_p=top_p,
             apply_defense_methods=apply_defense_methods
         )
-        model.model_name = "gpt-3.5-turbo-0613"
         return model
-    elif model_name.lower() == 'openai-1106':
-        model =  OpenaiModel(
-            auth_token=auth_token, 
-            device=device, 
-            system_prompt=system_prompt, 
-            temperature=temperature,
-            top_p=top_p,
-            apply_defense_methods=apply_defense_methods
-        )
-        model.model_name = "gpt-3.5-turbo-1106"
-        return model
-    elif model_name.lower() == 'openai-4-0613':
-        model =  OpenaiModel(
-            auth_token=auth_token, 
-            device=device, 
-            system_prompt=system_prompt, 
-            temperature=temperature,
-            top_p=top_p,
-            apply_defense_methods=apply_defense_methods
-        )
-        model.model_name = "gpt-4-0613"
-        return model
-    elif model_name.lower() == 'mistral':
+    elif model_name in MistralModel.model_details:
         return MistralModel(
             auth_token=auth_token, 
             device=device, 
             system_prompt=system_prompt, 
+            model_name=model_name,
             apply_defense_methods=apply_defense_methods
         )
     else:
