@@ -223,7 +223,7 @@ class OpenaiModel(Model):
         self.max_parallelism = MAX_PARALLELISM_LLM_MODELS
         self.temperature = temperature
         self.top_p = top_p
-        self.model_name = self.model_name
+        self.model_name = model_name
 
     def internal_generate(self, prompts, max_tokens):
         """
