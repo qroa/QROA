@@ -179,10 +179,10 @@ class TriggerGenerator:
                 self.h[z] = s_z
                 self.n[z] = 1
 
-            # Ensure the memory does not exceed its maximum capacity by removing the oldest entry
-            self.D += triggers.sort(key=lambda x: self.h[x], reverse=True)[:5]
-            while len(self.D) > self.max_d:
-                self.D.pop(0)
+        # Ensure the memory does not exceed its maximum capacity by removing the oldest entry
+        self.D += triggers
+        while len(self.D) > self.max_d:
+            self.D.pop(0)
 
     def _eval_triggers(self, instruction: str, triggers: List[str]) -> torch.Tensor:
         """
