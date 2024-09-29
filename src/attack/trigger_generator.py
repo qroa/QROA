@@ -166,12 +166,11 @@ class TriggerGenerator:
         """
 
         # Loop through each trigger and its corresponding score
-        for idx, trigger_test in enumerate(triggers):
-            z = trigger_test  
+        for idx, z in enumerate(triggers):
             s_z = scores[idx].item() 
 
             # Check if the trigger is already in the historical data
-            if trigger_test in self.h:
+            if z in self.h:
                 # Update the historical score using a running average
                 self.h[z] = (self.n[z] * self.h[z] + s_z) / (self.n[z] + 1)
                 self.n[z] += 1  
@@ -181,7 +180,7 @@ class TriggerGenerator:
                 self.n[z] = 1
 
             # Ensure the memory does not exceed its maximum capacity by removing the oldest entry
-            self.D += triggers
+            self.D += triggers.sort(key=lambda x: self.h[x], reverse=True)[:10]
             while len(self.D) > self.max_d:
                 self.D.pop(0)
 
