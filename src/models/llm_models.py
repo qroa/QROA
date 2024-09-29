@@ -148,7 +148,6 @@ class MistralModel(Model):
         "mistral-large-latest",
         "mistral-small-latest"}
 
-
     def __init__(
         self, 
         auth_token: str, 

@@ -27,6 +27,8 @@ class JailBreak:
         
         self.embedding_model_path = self.config["embedding_model_path"]
         self.reference_embedding, self.tokenizer_surrogate_model = self._load_embedding_model(self.embedding_model_path)
+        self.reference_embedding = self.reference_embedding.to(device, dtype=torch.float32)
+        self.reference_embedding.requires_grad = False
         
         self.logging_path = os.path.join(self.config['logging_path'], self.model_name)
         self.results_path = os.path.join(self.config['results_path'], self.model_name)
