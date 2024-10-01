@@ -83,7 +83,7 @@ class JailBreak:
         triggers_validate = self._load_json(self.triggers_validate_path)
 
         logging_generator = self._read_csv(self.logging_generator_path_csv)
-        logging_validator = self._read_csv(self.logging_generator_path_csv)
+        logging_validator = self._read_csv(self.logging_validator_path_csv)
     
         for instruction in instructions: 
             trigger_generator = TriggerGenerator(self.model, 
