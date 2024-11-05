@@ -146,7 +146,8 @@ class MistralModel(Model):
     
     model_details = {
         "mistral-large-latest",
-        "mistral-small-latest"}
+        "mistral-small-latest",
+        "ag:f3c101ea:20241105:untitled-agent:06d8a8a6"}
 
     def __init__(
         self, 
