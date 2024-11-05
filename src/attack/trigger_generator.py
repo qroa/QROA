@@ -313,7 +313,7 @@ class TriggerGenerator:
                                   current_epoch)
                 
                 prompt = instruction+trigger
-                progress_bar.set_description(f"Score : {self.h[trigger]}, Max n: {max_n}")
+                progress_bar.set_description(f"Score : {self.h[trigger]}, Loss: {self.loss:.4f}, Max n: {max_n}")
                 if (self.h[trigger]>self.threshold) and (self.temperature==0):
                         break
                     # resampled_triggers = [trigger]*self.nb_samples
