@@ -155,12 +155,16 @@ class MistralModel(Model):
         device: str,
         system_prompt: str,
         model_name: str,
+        temperature: float,
+        top_p: float,
         apply_defense_methods: bool
     ):
         super().__init__(auth_token, device, system_prompt, apply_defense_methods)
 
         self.client = MistralClient(api_key=auth_token)
         self.model_name = model_name
+        self.temperature = temperature
+        self.top = top_p
 
     def internal_generate(self, prompts, max_tokens):
         """
@@ -179,7 +183,9 @@ class MistralModel(Model):
             output = self.client.chat(
                 model=self.model_name,
                 messages=prompt,
-                max_tokens=max_tokens)
+                max_tokens=max_tokens,
+                temperature=self.temperature,
+                top_p=self.top_p)
             
             return output.choices[0].message.content
 
