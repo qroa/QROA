@@ -50,8 +50,10 @@ def get_model(model_name: str,
         return MistralModel(
             auth_token=auth_token, 
             device=device, 
-            system_prompt=system_prompt, 
+            system_prompt=system_prompt,
             model_name=model_name,
+            temperature=temperature,
+            top_p=top_p,
             apply_defense_methods=apply_defense_methods
         )
     else:
