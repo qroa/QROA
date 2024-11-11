@@ -48,8 +48,8 @@ def get_model(model_name: str,
         return model
     elif model_name in MistralModel.model_details:
         return MistralModel(
-            auth_token=auth_token, 
-            device=device, 
+            auth_token=auth_token,
+            device=device,
             system_prompt=system_prompt,
             model_name=model_name,
             temperature=temperature,

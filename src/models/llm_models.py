@@ -164,7 +164,7 @@ class MistralModel(Model):
         self.client = MistralClient(api_key=auth_token)
         self.model_name = model_name
         self.temperature = temperature
-        self.top = top_p
+        self.top_p = top_p
 
     def internal_generate(self, prompts, max_tokens):
         """
