@@ -3,8 +3,8 @@ import concurrent.futures
 
 from openai import OpenAI
 from fastchat.conversation import get_conv_template
-from mistralai.client import MistralClient
-from mistralai.models.chat_completion import ChatMessage
+from mistralai import Mistral
+# from mistralai.models.chat_completion import ChatMessage
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 from huggingface_hub import login
@@ -161,7 +161,7 @@ class MistralModel(Model):
     ):
         super().__init__(auth_token, device, system_prompt, apply_defense_methods)
 
-        self.client = MistralClient(api_key=auth_token)
+        self.client = Mistral(api_key=auth_token)
         self.model_name = model_name
         self.temperature = temperature
         self.top_p = top_p
@@ -177,10 +177,12 @@ class MistralModel(Model):
         Returns:
             List[str]: The generated text.
         """
-        prompts = [[ChatMessage(role="user", content=prompt)] for prompt in prompts]
+        # prompts = [[ChatMessage(role="user", content=prompt)] for prompt in prompts]
+
+        prompts = [[{"role": "user", "content": prompt}] for prompt in prompts]
 
         def fetch_generation(prompt):
-            output = self.client.chat(
+            output = self.client.chat.complete(
                 model=self.model_name,
                 messages=prompt,
                 max_tokens=max_tokens,
