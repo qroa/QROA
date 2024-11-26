@@ -55,7 +55,9 @@ class HuggingFaceModel(Model):
         self.temperature = temperature
         self.top_p = top_p
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self.path, 
+        print(f"PATH = {self.path}")
+
+        self.tokenizer = AutoTokenizer.from_pretrained(self.path,
                                                        padding_side="left",
                                                        trust_remote_code=True)
         self.model = (

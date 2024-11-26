@@ -52,7 +52,7 @@ def main(input_file, auth_token):
     
     # Define configuration
     config = {
-        "model": "mistral-large-latest",  # Model to use from Hugging Face
+        "model": "vicuna_hf",  # Model to use from Hugging Face
         "apply_defense_methods": False,  # Whether to apply defense methods
         "auth_token": auth_token,  # Token for model access
         "system_prompt": SYSTEM_MESSAGES['vicuna'],  # Initial prompt for the model
