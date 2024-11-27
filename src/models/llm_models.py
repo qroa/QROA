@@ -64,7 +64,7 @@ class HuggingFaceModel(Model):
             AutoModelForCausalLM.from_pretrained(
                 self.path,
                 torch_dtype=torch.bfloat16,
-                device_map="auto",
+                device_map=None,
                 trust_remote_code=True,
             )
             .eval()
