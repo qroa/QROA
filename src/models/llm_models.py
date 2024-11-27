@@ -68,6 +68,7 @@ class HuggingFaceModel(Model):
                 trust_remote_code=True,
             )
             .eval()
+            .to(device)
         )
 
         if 'llama-2' in model_name:
