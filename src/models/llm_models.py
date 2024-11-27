@@ -64,11 +64,10 @@ class HuggingFaceModel(Model):
             AutoModelForCausalLM.from_pretrained(
                 self.path,
                 torch_dtype=torch.bfloat16,
-                device_map="balanced",
+                device_map="auto",
                 trust_remote_code=True,
             )
             .eval()
-            .to(device)
         )
 
         if 'llama-2' in model_name:
