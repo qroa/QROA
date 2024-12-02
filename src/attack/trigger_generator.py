@@ -317,7 +317,8 @@ class TriggerGenerator:
                 self._add_logging(instruction,
                                   trigger,
                                   current_epoch)
-                
+                # Debug
+                print(type(self.h[trigger]), type(self.loss), type(max_n))
                 # Log metrics for the current epoch
                 self.scores_history.append(self.h[trigger])
                 self.losses_history.append(self.loss)
@@ -348,7 +349,7 @@ class TriggerGenerator:
         # Create a figure for the plots
         plt.figure(figsize=(12, 6))
 
-        # Plot Scores
+        # Scores
         plt.subplot(1, 3, 1)
         plt.plot(self.scores_history, label="Score", color="blue")
         plt.title("Score History")
@@ -357,7 +358,7 @@ class TriggerGenerator:
         plt.grid()
         plt.legend()
 
-        # Plot Loss
+        # Loss
         plt.subplot(1, 3, 2)
         plt.plot(self.losses_history, label="Loss", color="red")
         plt.title("Loss History")
@@ -366,7 +367,7 @@ class TriggerGenerator:
         plt.grid()
         plt.legend()
 
-        # Plot Max_n
+        # Max_n
         plt.subplot(1, 3, 3)
         plt.plot(self.max_n_history, label="Max N", color="green")
         plt.title("Max N History")
