@@ -317,11 +317,10 @@ class TriggerGenerator:
                 self._add_logging(instruction,
                                   trigger,
                                   current_epoch)
-                # Debug
-                print(type(self.h[trigger]), type(self.loss), type(max_n))
+            
                 # Log metrics for the current epoch
                 self.scores_history.append(self.h[trigger])
-                self.losses_history.append(self.loss)
+                self.losses_history.append(self.loss.cpu().item())
                 self.max_n_history.append(max_n)
 
                 prompt = instruction+trigger
