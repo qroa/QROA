@@ -1,6 +1,7 @@
 from typing import List, Dict, Set
 import random
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 import torch
 from torch.nn import  MSELoss
@@ -263,6 +264,11 @@ class TriggerGenerator:
         # Update memory with initial triggers and their scores
         self._update_memory(triggers, score_array)
 
+        # Arrays for plotting
+        self.scores_history = []
+        self.losses_history = []
+        self.max_n_history = []
+
         # Start optimization process over specified number of epochs
         with tqdm(
             range(self.nb_epochs),
@@ -312,6 +318,11 @@ class TriggerGenerator:
                                   trigger,
                                   current_epoch)
                 
+                # Log metrics for the current epoch
+                self.scores_history.append(self.h[trigger])
+                self.losses_history.append(self.loss)
+                self.max_n_history.append(max_n)
+
                 prompt = instruction+trigger
                 progress_bar.set_description(f"Score : {self.h[trigger]}, Loss: {self.loss:.4f}, Max n: {max_n}")
                 progress_bar.set_description(f"Score : {self.h[trigger]}, Prompt : {[prompt]}, Loss: {self.loss:.4f}, Max n: {max_n}")
@@ -333,14 +344,48 @@ class TriggerGenerator:
 
             return list(self.best_triggers)
 
+    def plot_score_loss_n(self):
+        # Create a figure for the plots
+        plt.figure(figsize=(12, 6))
+
+        # Plot Scores
+        plt.subplot(1, 3, 1)
+        plt.plot(self.scores_history, label="Score", color="blue")
+        plt.title("Score History")
+        plt.xlabel("Epoch")
+        plt.ylabel("Score")
+        plt.grid()
+        plt.legend()
+
+        # Plot Loss
+        plt.subplot(1, 3, 2)
+        plt.plot(self.losses_history, label="Loss", color="red")
+        plt.title("Loss History")
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.grid()
+        plt.legend()
+
+        # Plot Max_n
+        plt.subplot(1, 3, 3)
+        plt.plot(self.max_n_history, label="Max N", color="green")
+        plt.title("Max N History")
+        plt.xlabel("Epoch")
+        plt.ylabel("Max N")
+        plt.grid()
+        plt.legend()
+
+        # Show the plots
+        plt.tight_layout()
+        plt.show()
 
     def run(self, instruction):
         """Generates multiple triggers for the given instruction."""
         print(f"Generate triggers for instruction: {instruction}")
         triggers = self._generate_triggers(instruction)
+        self.plot_score_loss_n()
 
         return triggers
-
 
 class TriggerValidator:
     """Class to validate the effectiveness of generated triggers using a statistical approach."""
