@@ -338,6 +338,7 @@ class TriggerGenerator:
                     # Select the current best trigger based on UCB
                     trigger = max(self.h, key=lambda key: ucb_b[key])
 
+                    print(f"self.coordinates = {self.coordinates}, self.topk = {self.topk}")
                     # Select a set of random token positions to modify (multi-token update)
                     current_coordinates = random.sample(self.coordinates, k=self.topk)
 
