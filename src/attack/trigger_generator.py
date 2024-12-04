@@ -241,6 +241,55 @@ class TriggerGenerator:
         
         return self.logging 
     
+    def calculate_loss(self, model, context, target, suffix):
+        # Concatenate context and suffix
+        prompt = context + suffix
+        # Get probabilities of target from the model
+        target_prob = model.get_probabilities(prompt, target)
+        # Compute negative log-likelihood
+        return -np.log(target_prob)
+    
+    def multi_token_update(self, trigger, coordinates, surrogate_model, acquisition_function, top_k):
+        """
+        Modify multiple coordinates in the trigger using the acquisition function.
+
+        Args:
+            trigger (str): The current trigger.
+            coordinates (List[int]): List of positions in the trigger to modify.
+            surrogate_model (Model): Surrogate model for scoring candidates.
+            acquisition_function (Callable): Function to generate candidate triggers.
+            top_k (int): Number of top candidates to select for multi-token combination.
+
+        Returns:
+            str: Best modified trigger based on loss.
+        """
+        # Generate top-k candidates for each coordinate
+        candidates = []
+        for coord in coordinates:
+            new_candidates = acquisition_function(surrogate_model, trigger, coord, top_k)
+            candidates.extend(new_candidates)
+
+        # Evaluate loss for each candidate
+        candidates_with_loss = [(candidate, self.calculate_loss(surrogate_model, trigger, candidate)) for candidate in candidates]
+        candidates_with_loss.sort(key=lambda x: x[1])  # Sort by loss
+
+        # Select top-k candidates across all coordinates
+        top_candidates = [candidate for candidate, _ in candidates_with_loss[:top_k]]
+
+        # Combine candidates to generate multi-coordinate modifications
+        combined_candidates = [trigger]
+        for candidate in top_candidates:
+            combined = list(trigger)
+            for i, token in enumerate(candidate):
+                if token != trigger[i]:
+                    combined[i] = token
+            combined_candidates.append("".join(combined))
+
+        # Evaluate and select the best candidate
+        best_candidate = min(combined_candidates, key=lambda x: self.calculate_loss(surrogate_model, trigger, x))
+        return best_candidate
+
+    
     def _generate_triggers(self, instruction: str) -> List[str]:
         """
         Generates and optimizes a list of triggers for a given instruction to maximize the likelihood of inducing specific behavior in a language model.
@@ -276,57 +325,50 @@ class TriggerGenerator:
             unit="epoch",
         ) as progress_bar:
             for current_epoch in progress_bar:
-                
                 if current_epoch % len(self.coordinates) == 0:
                     random.shuffle(self.coordinates)
 
-                # Selection Phase 
+                # Selection Phase
                 with torch.no_grad():
-                    
                     self.N = sum(self.n.values())
 
                     # Calculate Upper Confidence Bound for each trigger
-                    ucb_b =  calculate_ucb(self.h,
-                                           self.n,
-                                           self.N,
-                                           self.ucb_c)
-                    
+                    ucb_b = calculate_ucb(self.h, self.n, self.N, self.ucb_c)
+
                     # Select the current best trigger based on UCB
                     trigger = max(self.h, key=lambda key: ucb_b[key])
 
-                    # Select a random token position to modify
-                    current_coordinate = self.coordinates[current_epoch % self.coordinates_length]
+                    # Select a set of random token positions to modify (multi-token update)
+                    current_coordinates = random.sample(self.coordinates, k=self.topk)
 
-                    # Generate top k new trigger variants by modifying the current trigger at the chosen position
-                    top_k_triggers = self.acquisition_function(self.surrogate_model, trigger, current_coordinate, self.topk)
+                    # Generate top-k new trigger variants by modifying multiple positions
+                    best_trigger = self.multi_token_update(
+                        trigger,
+                        current_coordinates,
+                        self.surrogate_model,
+                        self.acquisition_function,
+                        self.topk
+                    )
 
-                    # Eval Phase Phase 
-                    score_array = self._eval_triggers(instruction, top_k_triggers)
-                    # Update memory with new triggers and their scores
-                    self._update_memory(top_k_triggers, score_array)
-                    # Calculate maximum number of times any trigger has been sampled
-                    max_n = max(self.n.values())
+                    # Evaluate and update memory with the new best trigger
+                    score_array = self._eval_triggers(instruction, [best_trigger])
+                    self._update_memory([best_trigger], score_array)
 
-                #Perform learning phase: optimize surrogate model parameters using a sampled batch of triggers
-                self.loss = self._optimization_step()
-                # Check if the currently selected best trigger meets the threshold for success
-                if self.h[trigger] >= self.threshold:
-                    self.best_triggers.add(trigger)
+                    # Perform learning phase: optimize surrogate model parameters
+                    self.loss = self._optimization_step()
 
-                # Log current epoch results
-                self._add_logging(instruction,
-                                  trigger,
-                                  current_epoch)
-            
-                # Log metrics for the current epoch
-                self.scores_history.append(self.h[trigger])
-                self.losses_history.append(self.loss.cpu().item())
-                self.max_n_history.append(max_n)
+                    # Check if the currently selected best trigger meets the threshold for success
+                    if self.h[best_trigger] >= self.threshold:
+                        self.best_triggers.add(best_trigger)
 
-                prompt = instruction+trigger
-                progress_bar.set_description(f"Score : {self.h[trigger]}, Loss: {self.loss:.4f}, Max n: {max_n}")
-                progress_bar.set_description(f"Score : {self.h[trigger]}, Prompt : {[prompt]}, Loss: {self.loss:.4f}, Max n: {max_n}")
-                if (self.h[trigger]>self.threshold) and (self.temperature==0):
+                    # Log metrics
+                    self.scores_history.append(self.h[best_trigger])
+                    self.losses_history.append(self.loss.cpu().item())
+                    self.max_n_history.append(max(self.n.values()))
+
+                    # Update progress bar
+                    progress_bar.set_description(f"Score: {self.h[best_trigger]}, Loss: {self.loss:.4f}")
+                    if (self.h[best_trigger] > self.threshold) and (self.temperature == 0):
                         break
                     # resampled_triggers = [trigger]*self.nb_samples
                     # score_array = self._eval_triggers(instruction,
