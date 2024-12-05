@@ -63,6 +63,7 @@ class TriggerGenerator:
         self.triggers_init = config['triggers_init']
         self.threshold = config['threshold']
         self.temperature = config['temperature']
+        self.target = config["target"]
 
         self.nb_samples = config["nb_samples_per_trigger"]  # Number of samples per trigger for validation.
         self.threshold = config["threshold"]  # Threshold to determine trigger validity.
@@ -77,7 +78,7 @@ class TriggerGenerator:
         self.token_count = reference_embedding.shape[0]  # Number of tokens in the embedding.
 
         # Initializing surrogate and acquisition models for optimization:
-        self.surrogate_model = SurrogateModel(self.coordinates_length, self.reference_embedding).to(self.device)
+        self.surrogate_model = SurrogateModel(self.coordinates_length, self.reference_embedding, self.target).to(self.device)
         self.acquisition_function = AcquisitionFunction(self.token_count, self.coordinates_length, self.device, self.tokenizer_surrogate_model)
 
         # Optimizer for the surrogate model:
@@ -246,7 +247,7 @@ class TriggerGenerator:
         # Concatenate instruction and suffix
         prompt = instruction + suffix
         # Get probabilities of target from the model
-        target_prob = surrogate_model.get_probabilities(prompt, self.tokenizer_surrogate_model)
+        target_prob = surrogate_model.get_probabilities(prompt, self.tokenizer_surrogate_model, self.target)
         # Compute negative log-likelihood
         return -np.log(target_prob)
     

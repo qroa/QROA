@@ -76,6 +76,7 @@ def main(input_file, auth_token):
         "temperature": 0.9,  # Sampling temperature for generation
         "top_p": 0.6,  # Nucleus sampling cutoff
         "p_value": 0.1,  # Statistical testing p-value
+        "target": "Sure,", # Target response to calculate loss
     }
 
     instructions = read_instructions_from_file(input_file)

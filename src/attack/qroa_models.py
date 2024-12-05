@@ -5,8 +5,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from src.global_constants import TARGET
-
 
 class SurrogateModel(nn.Module):
     """
@@ -33,7 +31,6 @@ class SurrogateModel(nn.Module):
         self.len_coordinates = len_coordinates
         self.emb = ref_emb.clone()
         self.emb.requires_grad = False 
-
 
         self.conv1 = nn.Conv1d(self.emb_dim, 32, kernel_size=1)
         self.fc1 = nn.Linear(32*self.len_coordinates, 128)
@@ -84,7 +81,7 @@ class SurrogateModel(nn.Module):
         with torch.no_grad():
             score = self.forward(input_tensor).squeeze().item()  # Get the score
 
-        # Transform the surrogate model's score into a probability-like value if necessary
+        # Transform the surrogate model's score into a probability-like value
         probability = torch.sigmoid(torch.tensor(score)).item()  # Sigmoid maps score to [0, 1]
 
         return probability
