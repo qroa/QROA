@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from global_constants import TARGET
+from src.global_constants import TARGET
 
 
 class SurrogateModel(nn.Module):
