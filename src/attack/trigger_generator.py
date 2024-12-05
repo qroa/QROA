@@ -14,6 +14,7 @@ from src.attack.score_function import scoring_function_factory
 from src.attack.qroa_models import SurrogateModel, AcquisitionFunction
 from src.utils import calculate_ucb, calculate_log_prob
 from src.global_constants import PERPLEXITY_MODEL_NAME
+from src.models.llm_models import HuggingFaceModel, Mistral, OpenAI
 
 
 class TriggerGenerator:
@@ -241,11 +242,11 @@ class TriggerGenerator:
         
         return self.logging 
     
-    def calculate_loss(self, model, context, target, suffix):
-        # Concatenate context and suffix
-        prompt = context + suffix
+    def calculate_loss(self, model, instruction, suffix):
+        # Concatenate instruction and suffix
+        prompt = instruction + suffix
         # Get probabilities of target from the model
-        target_prob = model.get_probabilities(prompt, target)
+        target_prob = model.get_probabilities(prompt, self.tokenizer_surrogate_model)
         # Compute negative log-likelihood
         return -np.log(target_prob)
     

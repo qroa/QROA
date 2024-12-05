@@ -8,9 +8,10 @@ from mistralai import Mistral
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 from huggingface_hub import login
+import numpy as np
 
 from src.models.base import Model
-from src.global_constants import MAX_PARALLELISM_LLM_MODELS, PROJECT_DIR
+from src.global_constants import MAX_PARALLELISM_LLM_MODELS, PROJECT_DIR, TARGET
 
 class HuggingFaceModel(Model):
     """
@@ -134,6 +135,41 @@ class HuggingFaceModel(Model):
 
         return generations
 
+    def get_probabilities(self, tokenizer, prompt):
+        """
+        Calculates the probability of the target sequence being generated after the given prompt.
+
+        Args:
+            self: The language model (e.g., GPT, LLAMA).
+            tokenizer: The tokenizer corresponding to the language model.
+            prompt (str): The input text (context + suffix).
+
+        Returns:
+            float: The probability of the target sequence given the prompt.
+        """
+        # Tokenize the prompt and target
+        prompt_ids = tokenizer.encode(prompt, return_tensors="pt")  # Shape: (1, prompt_length)
+        target_ids = tokenizer.encode(TARGET, return_tensors="pt")  # Shape: (1, target_length)
+        
+        # Concatenate prompt and target IDs
+        input_ids = torch.cat([prompt_ids, target_ids], dim=-1)  # Shape: (1, prompt_length + target_length)
+
+        # Get model outputs (logits)
+        outputs = self(input_ids)
+        logits = outputs.logits  # Shape: (1, sequence_length, vocab_size)
+
+        # Compute probabilities for target tokens
+        target_probs = []
+        for i, target_id in enumerate(target_ids[0]):
+            # The target token's index in logits is offset by the prompt's length
+            token_index = prompt_ids.shape[1] + i - 1
+            target_prob = torch.softmax(logits[0, token_index], dim=-1)[target_id].item()
+            target_probs.append(target_prob)
+
+        # Return the product of target token probabilities (chain rule for conditional probability)
+        return np.prod(target_probs)
+
+
 
 class MistralModel(Model):
     """
@@ -202,6 +238,40 @@ class MistralModel(Model):
                 results[result_position] = future.result()
 
         return results
+    
+    def get_probabilities(self, tokenizer, prompt):
+        """
+        Calculates the probability of the target sequence being generated after the given prompt.
+
+        Args:
+            self: The language model (e.g., GPT, LLAMA).
+            tokenizer: The tokenizer corresponding to the language model.
+            prompt (str): The input text (context + suffix).
+
+        Returns:
+            float: The probability of the target sequence given the prompt.
+        """
+        # Tokenize the prompt and target
+        prompt_ids = tokenizer.encode(prompt, return_tensors="pt")  # Shape: (1, prompt_length)
+        target_ids = tokenizer.encode(TARGET, return_tensors="pt")  # Shape: (1, target_length)
+        
+        # Concatenate prompt and target IDs
+        input_ids = torch.cat([prompt_ids, target_ids], dim=-1)  # Shape: (1, prompt_length + target_length)
+
+        # Get model outputs (logits)
+        outputs = self(input_ids)
+        logits = outputs.logits  # Shape: (1, sequence_length, vocab_size)
+
+        # Compute probabilities for target tokens
+        target_probs = []
+        for i, target_id in enumerate(target_ids[0]):
+            # The target token's index in logits is offset by the prompt's length
+            token_index = prompt_ids.shape[1] + i - 1
+            target_prob = torch.softmax(logits[0, token_index], dim=-1)[target_id].item()
+            target_probs.append(target_prob)
+
+        # Return the product of target token probabilities (chain rule for conditional probability)
+        return np.prod(target_probs)
     
     
 class OpenaiModel(Model):
@@ -272,3 +342,37 @@ class OpenaiModel(Model):
                 results[result_position] = future.result()
 
         return results
+    
+    def get_probabilities(self, tokenizer, prompt):
+        """
+        Calculates the probability of the target sequence being generated after the given prompt.
+
+        Args:
+            self: The language model (e.g., GPT, LLAMA).
+            tokenizer: The tokenizer corresponding to the language model.
+            prompt (str): The input text (context + suffix).
+
+        Returns:
+            float: The probability of the target sequence given the prompt.
+        """
+        # Tokenize the prompt and target
+        prompt_ids = tokenizer.encode(prompt, return_tensors="pt")  # Shape: (1, prompt_length)
+        target_ids = tokenizer.encode(TARGET, return_tensors="pt")  # Shape: (1, target_length)
+        
+        # Concatenate prompt and target IDs
+        input_ids = torch.cat([prompt_ids, target_ids], dim=-1)  # Shape: (1, prompt_length + target_length)
+
+        # Get model outputs (logits)
+        outputs = self(input_ids)
+        logits = outputs.logits  # Shape: (1, sequence_length, vocab_size)
+
+        # Compute probabilities for target tokens
+        target_probs = []
+        for i, target_id in enumerate(target_ids[0]):
+            # The target token's index in logits is offset by the prompt's length
+            token_index = prompt_ids.shape[1] + i - 1
+            target_prob = torch.softmax(logits[0, token_index], dim=-1)[target_id].item()
+            target_probs.append(target_prob)
+
+        # Return the product of target token probabilities (chain rule for conditional probability)
+        return np.prod(target_probs)
