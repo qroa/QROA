@@ -110,11 +110,24 @@ class AcquisitionFunction(nn.Module):
             batch_size = self.max_dim
             inputs = str_id.repeat(batch_size, 1)
 
-            random_coordinates = torch.randint(
-                0, self.len_coordinates, (batch_size,), device=self.device
+            # Randomly decide the number of tokens to modify for each row
+            num_modifications = torch.randint(1, self.len_coordinates // 2, (batch_size,), device=self.device)
+
+            # Generate random indices for each row in the batch
+            random_indices = torch.argsort(
+                torch.rand(batch_size, self.len_coordinates, device=self.device), dim=-1
             )
 
-            inputs[torch.arange(batch_size), random_coordinates] = self.indices
+            mask = torch.arange(self.len_coordinates, device=self.device).expand(batch_size, -1)
+            mask = mask < num_modifications.unsqueeze(-1)
+
+            # Gather the indices to modify based on the mask
+            selected_indices = random_indices[mask].view(batch_size, -1)
+
+            # Modify the inputs at the selected indices
+            inputs.scatter_(
+                1, selected_indices, self.indices[selected_indices % self.indices.size(0)]
+            )
 
             predictions = surrogate_model(inputs).T
  
