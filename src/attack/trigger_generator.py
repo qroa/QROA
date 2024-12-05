@@ -14,7 +14,7 @@ from src.attack.score_function import scoring_function_factory
 from src.attack.qroa_models import SurrogateModel, AcquisitionFunction
 from src.utils import calculate_ucb, calculate_log_prob
 from src.global_constants import PERPLEXITY_MODEL_NAME
-from src.models.llm_models import HuggingFaceModel, Mistral, OpenAI
+# from src.models.llm_models import HuggingFaceModel, Mistral, OpenAI
 
 
 class TriggerGenerator:
@@ -242,11 +242,11 @@ class TriggerGenerator:
         
         return self.logging 
     
-    def calculate_loss(self, model, instruction, suffix):
+    def calculate_loss(self, surrogate_model, instruction, suffix):
         # Concatenate instruction and suffix
         prompt = instruction + suffix
         # Get probabilities of target from the model
-        target_prob = model.get_probabilities(prompt, self.tokenizer_surrogate_model)
+        target_prob = surrogate_model.get_probabilities(prompt, self.tokenizer_surrogate_model)
         # Compute negative log-likelihood
         return -np.log(target_prob)
     
@@ -356,35 +356,35 @@ class TriggerGenerator:
                     score_array = self._eval_triggers(instruction, [best_trigger])
                     self._update_memory([best_trigger], score_array)
 
-                    # Perform learning phase: optimize surrogate model parameters
-                    self.loss = self._optimization_step()
+                # Perform learning phase: optimize surrogate model parameters
+                self.loss = self._optimization_step()
 
-                    # Check if the currently selected best trigger meets the threshold for success
-                    if self.h[best_trigger] >= self.threshold:
-                        self.best_triggers.add(best_trigger)
+                # Check if the currently selected best trigger meets the threshold for success
+                if self.h[best_trigger] >= self.threshold:
+                    self.best_triggers.add(best_trigger)
 
-                    # Log metrics
-                    self.scores_history.append(self.h[best_trigger])
-                    self.losses_history.append(self.loss.cpu().item())
-                    self.max_n_history.append(max(self.n.values()))
+                # Log metrics
+                self.scores_history.append(self.h[best_trigger])
+                self.losses_history.append(self.loss.cpu().item())
+                self.max_n_history.append(max(self.n.values()))
 
-                    # Update progress bar
-                    progress_bar.set_description(f"Score: {self.h[best_trigger]}, Loss: {self.loss:.4f}")
-                    if (self.h[best_trigger] > self.threshold) and (self.temperature == 0):
-                        break
-                    # resampled_triggers = [trigger]*self.nb_samples
-                    # score_array = self._eval_triggers(instruction,
-                    #                                  resampled_triggers)    
+                # Update progress bar
+                progress_bar.set_description(f"Score: {self.h[best_trigger]}, Loss: {self.loss:.4f}")
+                if (self.h[best_trigger] > self.threshold) and (self.temperature == 0):
+                    break
+                # resampled_triggers = [trigger]*self.nb_samples
+                # score_array = self._eval_triggers(instruction,
+                #                                  resampled_triggers)    
 
-                    # th = self.threshold
+                # th = self.threshold
 
-                    # mean = score_array.mean().item()
-                    # std = score_array.std().item()
-                    # z = (mean - th)/(std/np.sqrt(self.nb_samples))
-                    # print(f'z: {z}, mean: {mean}')
-                    # z_critical = stats.norm.ppf(1-self.p_value) 
-                    # if z>=z_critical:
-                    #    break
+                # mean = score_array.mean().item()
+                # std = score_array.std().item()
+                # z = (mean - th)/(std/np.sqrt(self.nb_samples))
+                # print(f'z: {z}, mean: {mean}')
+                # z_critical = stats.norm.ppf(1-self.p_value) 
+                # if z>=z_critical:
+                #    break
 
             return list(self.best_triggers)
 

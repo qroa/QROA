@@ -1,8 +1,11 @@
-import random 
+import random
+import numpy as np
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+from global_constants import TARGET
 
 
 class SurrogateModel(nn.Module):
@@ -54,6 +57,38 @@ class SurrogateModel(nn.Module):
         x = F.relu(x)
         x = self.fc3(x)
         return x
+    
+    def get_probabilities(self, tokenizer, prompt, target):
+        """
+        Calculates the probability of the target sequence being generated after the given prompt using the SurrogateModel.
+
+        Args:
+            tokenizer: The tokenizer corresponding to the surrogate model's embedding space.
+            prompt (str): The input text (context + suffix).
+            target (str): The target sequence whose probability we want to calculate.
+
+        Returns:
+            float: A surrogate score approximating the probability of the target sequence given the prompt.
+        """
+        # Tokenize the prompt and target
+        prompt_ids = tokenizer.encode(prompt, add_special_tokens=False)  # List of token IDs for prompt
+        target_ids = tokenizer.encode(target, add_special_tokens=False)  # List of token IDs for target
+
+        # Concatenate prompt and target token IDs
+        input_ids = prompt_ids + target_ids
+
+        # Convert to tensor indices for the surrogate model
+        input_tensor = torch.tensor(input_ids, dtype=torch.long).unsqueeze(0)
+
+        # Pass through the surrogate model
+        with torch.no_grad():
+            score = self.forward(input_tensor).squeeze().item()  # Get the score
+
+        # Transform the surrogate model's score into a probability-like value if necessary
+        probability = torch.sigmoid(torch.tensor(score)).item()  # Sigmoid maps score to [0, 1]
+
+        return probability
+
 
 
 class AcquisitionFunction(nn.Module):
