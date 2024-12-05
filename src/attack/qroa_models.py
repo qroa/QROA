@@ -68,8 +68,8 @@ class SurrogateModel(nn.Module):
             float: A surrogate score approximating the probability of the target sequence given the prompt.
         """
         # Tokenize the prompt and target
-        prompt_ids = tokenizer.encode(prompt)["input_ids"]  # List of token IDs for prompt
-        target_ids = tokenizer.encode(target)["input_ids"]   # List of token IDs for target
+        prompt_ids = tokenizer.encode(prompt)  # List of token IDs for prompt
+        target_ids = tokenizer.encode(target)  # List of token IDs for target
 
         # Concatenate prompt and target token IDs
         input_ids = prompt_ids + target_ids

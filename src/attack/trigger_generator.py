@@ -247,7 +247,7 @@ class TriggerGenerator:
         # Concatenate instruction and suffix
         prompt = instruction + suffix
         # Get probabilities of target from the model
-        target_prob = surrogate_model.get_probabilities(prompt, self.tokenizer_surrogate_model, self.target)
+        target_prob = surrogate_model.get_probabilities(self.tokenizer_surrogate_model, prompt, self.target)
         # Compute negative log-likelihood
         return -np.log(target_prob)
     
@@ -340,7 +340,6 @@ class TriggerGenerator:
                     # Select the current best trigger based on UCB
                     trigger = max(self.h, key=lambda key: ucb_b[key])
 
-                    print(f"self.coordinates = {self.coordinates}, self.topk = {self.topk}")
                     # Select a set of random token positions to modify (multi-token update)
                     current_coordinates = random.sample(self.coordinates, k=self.topk)
 
