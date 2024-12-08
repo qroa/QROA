@@ -105,7 +105,7 @@ class AcquisitionFunction(nn.Module):
         self.tokenizer_surrogate_model(
                     batch,
                     return_tensors="pt",
-                    max_length=self.coordinates_length,
+                    max_length=self.len_coordinates,
                     padding="max_length",
                     add_special_tokens=False,
                     truncation=True,
