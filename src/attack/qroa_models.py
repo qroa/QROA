@@ -125,7 +125,7 @@ class AcquisitionFunction(nn.Module):
                 top_inputs = inputs[top_indices, :]
                 top_strings += self.tokenizer_surrogate_model.batch_decode(top_inputs)
 
-        inputs = self._encode_string(input_string)
+        inputs = self._encode_string(top_strings)
         predictions = surrogate_model(inputs).T
         top_indices = torch.topk(predictions, num_samples).indices.view(-1).int()
         top_inputs = inputs[top_indices, :]
