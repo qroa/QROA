@@ -49,13 +49,14 @@ def main(input_file, auth_token):
     # model = "falcon_hf"             -> https://huggingface.co/tiiuae/falcon-7b-instruct
     # model = "gpt-3.5-turbo-0613"    -> gpt-3.5-turbo-0613
     # model = "mistral-large-latest"  -> mistral-large-latest
+    # model = "ministral-8b-instruct" -> https://huggingface.co/mistralai/Ministral-8B-Instruct-2410
     
     # Define configuration
     config = {
-        "model": "vicuna_hf",  # Model to use from Hugging Face
+        "model": "ministral-8b-instruct",  # Model to use from Hugging Face
         "apply_defense_methods": False,  # Whether to apply defense methods
         "auth_token": auth_token,  # Token for model access
-        "system_prompt": SYSTEM_MESSAGES['vicuna'],  # Initial prompt for the model
+        "system_prompt": SYSTEM_MESSAGES['default'],  # Initial prompt for the model
         "embedding_model_path": "gpt2",  # Path to model embeddings
         "len_coordinates": 10,  # Length of the trigger sequence
         "learning_rate": 0.01,  # Learning rate for optimizer

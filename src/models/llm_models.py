@@ -10,7 +10,7 @@ import torch
 from huggingface_hub import login
 
 from src.models.base import Model
-from src.global_constants import MAX_PARALLELISM_LLM_MODELS
+from src.global_constants import MAX_PARALLELISM_LLM_MODELS, PROJECT_DIR
 
 class HuggingFaceModel(Model):
     """
@@ -32,6 +32,7 @@ class HuggingFaceModel(Model):
         "vicuna_hf": ("lmsys/vicuna-7b-v1.3", "vicuna_v1.1"),
         "mistral_hf": ("mistralai/Mistral-7B-Instruct-v0.1", "mistral"),
         "falcon_hf": ("tiiuae/falcon-7b-instruct", "falcon"),
+        "ministral-8b-instruct": (f"{PROJECT_DIR}/models/Ministral-8B-Instruct-2410", "mistral"),
     }
 
     def __init__(self, 
@@ -46,6 +47,7 @@ class HuggingFaceModel(Model):
         super().__init__(auth_token, device, system_prompt, apply_defense_methods)
 
         path, template_name = self.model_details[model_name]
+        print(path, template_name)
         if auth_token is not None:  
             login(token=self.auth_token, add_to_git_credential=True)
 
@@ -55,8 +57,6 @@ class HuggingFaceModel(Model):
         self.temperature = temperature
         self.top_p = top_p
 
-        print(f"PATH = {self.path}")
-
         self.tokenizer = AutoTokenizer.from_pretrained(self.path,
                                                        padding_side="left",
                                                        trust_remote_code=True)
@@ -64,7 +64,7 @@ class HuggingFaceModel(Model):
             AutoModelForCausalLM.from_pretrained(
                 self.path,
                 torch_dtype=torch.bfloat16,
-                device_map="balanced",
+                device_map=None,
                 trust_remote_code=True,
             )
             .eval()
@@ -149,7 +149,8 @@ class MistralModel(Model):
     model_details = {
         "mistral-large-latest",
         "mistral-small-latest",
-        "open-mistral-nemo"}
+        "open-mistral-nemo",
+        }
 
     def __init__(
         self, 
