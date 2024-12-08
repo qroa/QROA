@@ -324,8 +324,7 @@ class TriggerGenerator:
                 self.max_n_history.append(max_n)
 
                 prompt = instruction+trigger
-                #progress_bar.set_description(f"Score : {self.h[trigger]}, Loss: {self.loss:.4f}, Max n: {max_n}")
-                progress_bar.set_description(f"Score : {self.h[trigger]}, Loss: {self.loss:.4f}, Prompt: {trigger}, Max n: {max_n}")
+                progress_bar.set_description(f"Score : {self.h[trigger]}, Loss: {self.loss:.4f}, Max n: {max_n}")
                 if (self.h[trigger]>self.threshold) and (self.temperature==0):
                         break
                     # resampled_triggers = [trigger]*self.nb_samples
@@ -350,7 +349,7 @@ class TriggerGenerator:
 
         # Scores
         plt.subplot(1, 3, 1)
-        data = self.score_histroy
+        data = self.scores_history
         data = [sum(data[:i+1])/(i+1) for i in range(len(data))]
         plt.plot(data, label="cumulative average", color="blue")
         plt.title("Score History")
