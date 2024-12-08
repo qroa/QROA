@@ -100,25 +100,36 @@ class AcquisitionFunction(nn.Module):
             truncation=True,
         ).to(self.device)
 
+
     def forward(self, surrogate_model, input_string, coordinate, num_samples):
 
-        with torch.no_grad():
+        top_strings = []
+        
+        for coordinate in range(self.len_coordinates):
+        
+            with torch.no_grad():
 
-            str_id = self._encode_string(input_string)
-            inputs = str_id.repeat(self.max_dim, 1)
+                str_id = self._encode_string(input_string)
+                inputs = str_id.repeat(self.max_dim, 1)
 
-            # coordinate = torch.randint(0, self.len_coordinates, (self.max_dim,))
-            # inputs[self.indices, coordinate] = self.indices
+                # coordinate = torch.randint(0, self.len_coordinates, (self.max_dim,))
+                # inputs[self.indices, coordinate] = self.indices
+            
+                inputs[:, coordinate] = self.indices
+                predictions = surrogate_model(inputs).T
 
-            inputs[:, coordinate] = self.indices
-            predictions = surrogate_model(inputs).T
+                top_indices = (
+                    torch.topk(predictions, num_samples).indices.view(-1).int()
+                )
 
-            top_indices = (
-                torch.topk(predictions, num_samples).indices.view(-1).int()
-            )
+                top_inputs = inputs[top_indices, :]
+                top_strings += self.tokenizer_surrogate_model.batch_decode(top_inputs)
 
-            top_inputs = inputs[top_indices, :]
-            top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-            top_strings = top_strings + [input_string]
+        inputs = self._encode_string(input_string)
+        predictions = surrogate_model(inputs).T
+        top_indices = torch.topk(predictions, num_samples).indices.view(-1).int()
+        top_inputs = inputs[top_indices, :]
+        top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
+        top_strings = top_strings + [input_string]
 
         return top_strings
