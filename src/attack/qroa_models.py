@@ -133,7 +133,7 @@ class AcquisitionFunction(nn.Module):
                 )
 
                 top_inputs = inputs[top_indices, :]
-                top_strings += self.tokenizer_surrogate_model.batch_decode(top_inputs)
+                top_strings = top_strings + self.tokenizer_surrogate_model.batch_decode(top_inputs)
 
         inputs = self._encode_batch(top_strings)
         predictions = surrogate_model(inputs).T
