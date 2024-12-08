@@ -107,9 +107,10 @@ class AcquisitionFunction(nn.Module):
             str_id = self._encode_string(input_string)
             inputs = str_id.repeat(self.max_dim, 1)
 
-            coordinate = torch.randint(0, self.len_coordinates, (self.max_dim,))
+            # coordinate = torch.randint(0, self.len_coordinates, (self.max_dim,))
+            # inputs[self.indices, coordinate] = self.indices
 
-            inputs[self.indices, coordinate] = self.indices
+            inputs[:, coordinate] = self.indices
             predictions = surrogate_model(inputs).T
 
             top_indices = (
