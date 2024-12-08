@@ -101,16 +101,17 @@ class AcquisitionFunction(nn.Module):
         ).to(self.device)
 
     def forward(self, surrogate_model, input_string, coordinate, num_samples):
-        
 
         with torch.no_grad():
-        
+
             str_id = self._encode_string(input_string)
-                
             inputs = str_id.repeat(self.max_dim, 1)
+
+            coordinate = torch.randint(0, self.len_coordinates, (self.max_dim,))
+
             inputs[:, coordinate] = self.indices
             predictions = surrogate_model(inputs).T
- 
+
             top_indices = (
                 torch.topk(predictions, num_samples).indices.view(-1).int()
             )
@@ -120,4 +121,3 @@ class AcquisitionFunction(nn.Module):
             top_strings = top_strings + [input_string]
 
         return top_strings
-
