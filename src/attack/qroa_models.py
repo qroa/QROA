@@ -109,7 +109,7 @@ class AcquisitionFunction(nn.Module):
 
             coordinate = torch.randint(0, self.len_coordinates, (self.max_dim,))
 
-            inputs[:, coordinate] = self.indices
+            inputs[self.indices, coordinate] = self.indices
             predictions = surrogate_model(inputs).T
 
             top_indices = (
