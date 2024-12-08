@@ -99,10 +99,10 @@ class AcquisitionFunction(nn.Module):
             truncation=True,
         ).to(self.device)
 
-    def _encode_batch(self, input_strings):
+    def _encode_batch(self, batch):
 
-        self.tokenizer_surrogate_model(
-                    input_strings,
+        return self.tokenizer_surrogate_model(
+                    batch,
                     return_tensors="pt",
                     max_length=self.len_coordinates,
                     padding="max_length",
@@ -133,7 +133,7 @@ class AcquisitionFunction(nn.Module):
                 top_inputs = inputs[top_indices, :]
                 top_strings = top_strings + self.tokenizer_surrogate_model.batch_decode(top_inputs)
 
-            inputs = self._encode_batch(top_strings).to(self.device)
+            inputs = self._encode_batch(top_strings)
             predictions = surrogate_model(inputs).T
             top_indices = torch.topk(predictions, num_samples).indices.view(-1).int()
             top_strings = [top_strings[i] for i in top_indices]
