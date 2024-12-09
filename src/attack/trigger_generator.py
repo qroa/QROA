@@ -360,7 +360,9 @@ class TriggerGenerator:
 
         # Loss
         plt.subplot(1, 3, 2)
-        plt.plot(self.losses_history, label="Loss", color="red")
+        data = self.losses_history
+        data = [sum(data[:i+1])/(i+1) for i in range(len(data))]
+        plt.plot(data, label="Loss", color="red")
         plt.title("Loss History")
         plt.xlabel("Epoch")
         plt.ylabel("Loss")

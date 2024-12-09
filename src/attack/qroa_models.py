@@ -139,7 +139,7 @@ class AcquisitionFunction(nn.Module):
         #     top_strings = [top_strings[i] for i in top_indices]
         #     top_strings = top_strings + [input_string]
 
-        with torch.no_grad():            
+        with torch.no_grad():
             str_id = self._encode_string(input_string)
             inputs = str_id.repeat(self.max_dim, 1)
 
