@@ -377,6 +377,7 @@ class TriggerGenerator:
 
         # Show the plots
         plt.tight_layout()
+        plt.savefig("plot.png")
         plt.show()
 
     def run(self, instruction):
