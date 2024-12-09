@@ -350,7 +350,9 @@ class TriggerGenerator:
 
         # Scores
         plt.subplot(1, 3, 1)
-        plt.plot(self.scores_history, label="Score", color="blue")
+        data = self.scores_history
+        data = [sum(data[:i+1])/(i+1) for i in range(len(data))]
+        plt.plot(data, label="cumulative average", color="blue")
         plt.title("Score History")
         plt.xlabel("Epoch")
         plt.ylabel("Score")
