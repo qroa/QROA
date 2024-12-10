@@ -67,7 +67,7 @@ def main(input_file, auth_token):
         "max_generations_tokens": 70,  # Max tokens generated in response
         "topk": 100,  # Number of top triggers to consider
         "max_d": 6400,  # Max size of the memory buffer
-        "ucb_c": 0.05,  # UCB algorithm exploration-exploitation parameter
+        "ucb_c": 0.1,  # UCB algorithm exploration-exploitation parameter
         "triggers_init": [],  # Initial triggers to start the buffer
         "threshold": 0.2,  # Threshold for statistical significance
         "nb_samples_per_trigger": 50,  # Samples per trigger for validation

@@ -110,15 +110,21 @@ class AcquisitionFunction(nn.Module):
             batch_size = 5*self.max_dim
             inputs = str_id.repeat(batch_size, 1)
 
-            random_coordinates = torch.randint(
-                0, self.len_coordinates, (batch_size,), device=self.device
-            )
+            # Generate sequential indices for the batch size
+            coordinate_indices = torch.arange(
+                self.len_coordinates, 
+                device=self.device
+                ).repeat(
+                    batch_size // self.len_coordinates + 1
+                    )[:batch_size]
 
+            # Random replacement values for each coordinate
             random_indices = torch.randint(
                 0, len(self.indices), (batch_size,), device=self.device
-            )
+                )
 
-            inputs[torch.arange(batch_size), random_coordinates] = random_indices
+            # Replace one coordinate per batch row
+            inputs[torch.arange(batch_size), coordinate_indices] = random_indices
 
             predictions = surrogate_model(inputs).T
  
