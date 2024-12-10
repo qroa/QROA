@@ -180,10 +180,24 @@ class TriggerGenerator:
                 self.h[z] = s_z
                 self.n[z] = 1
 
-        # Ensure the memory does not exceed its maximum capacity by removing the oldest entry
+
+        # Add new triggers to the memory
         self.D += triggers
+
+        # Ensure the memory does not exceed its maximum capacity
         while len(self.D) > self.max_d:
-            self.D.pop(0)
+            # Find the least-performing trigger that is not zero
+            least_performing_trigger = min(
+                (trigger for trigger in self.D if self.h.get(trigger, 0) > 0),
+                key=lambda t: self.h[t],
+                default=None  # Fallback if all scores are zero or triggers are missing
+            )
+
+            if least_performing_trigger is not None:
+                self.D.remove(least_performing_trigger)
+            else:
+                # If all remaining triggers have a score of zero, remove the oldest
+                self.D.pop(0)
 
     def _eval_triggers(self, instruction: str, triggers: List[str]) -> torch.Tensor:
         """
