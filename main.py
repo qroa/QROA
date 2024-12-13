@@ -53,13 +53,14 @@ def main(input_file, auth_token):
     # model = "gpt-3.5-turbo-0613"    -> gpt-3.5-turbo-0613
     # model = "mistral-large-latest"  -> mistral-large-latest
     # model = "ministral-8b-instruct" -> https://huggingface.co/mistralai/Ministral-8B-Instruct-2410
+    # model = "mistral_nemo"          -> https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407
     
     # Define configuration
     config = {
-        "model": "vicuna_hf",  # Model to use from Hugging Face
+        "model": "mistral_nemo",  # Model to use from Hugging Face
         "apply_defense_methods": False,  # Whether to apply defense methods
         "auth_token": auth_token,  # Token for model access
-        "system_prompt": SYSTEM_MESSAGES['llama-2'],  # Initial prompt for the model
+        "system_prompt": SYSTEM_MESSAGES["default"],  # Initial prompt for the model
         "embedding_model_path": "lmsys/vicuna-7b-v1.5-16k",  # Path to model embeddings
         "len_coordinates": 10,  # Length of the trigger sequence
         "learning_rate": 0.01,  # Learning rate for optimizer
@@ -71,7 +72,7 @@ def main(input_file, auth_token):
         "topk": 100,  # Number of top triggers to consider
         "max_d": 6400,  # Max size of the memory buffer
         "ucb_c": 0.05,  # UCB algorithm exploration-exploitation parameter
-        "triggers_init": triggers_init,  # Initial triggers to start the buffer
+        "triggers_init": [],  # Initial triggers to start the buffer
         "threshold": 0.2,  # Threshold for statistical significance
         "nb_samples_per_trigger": 50,  # Samples per trigger for validation
         "logging_path": 'logs/',  # Path for logging
