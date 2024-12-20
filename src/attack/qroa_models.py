@@ -4,6 +4,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import nlpaug.augmenter.word as naw
+
+from transformers import AutoTokenizer, AutoModel
+from tqdm import tqdm
+
 
 class SurrogateModel(nn.Module):
     """
@@ -101,250 +106,80 @@ class AcquisitionFunction(nn.Module):
         ).to(self.device)
 
     def forward(self, surrogate_model, input_string, coordinate, num_samples):
-
-        # Solution 0 : QROA
-        # with torch.no_grad():
-        
-        #     str_id = self._encode_string(input_string)
-                
-        #     inputs = str_id.repeat(self.max_dim, 1)
-        #     inputs[:, coordinate] = self.indices
-        #     predictions = surrogate_model(inputs).T
- 
-        #     top_indices = (
-        #         torch.topk(predictions, num_samples).indices.view(-1).int()
-        #     )
-
-        #     top_inputs = inputs[top_indices, :]
-        #     top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-        #     top_strings = top_strings + [input_string]
-
-        
-        # Solution 1 : one token random coordinate
-        # with torch.no_grad():
-        
-        #     str_id = self._encode_string(input_string)
-
-        #     batch_size = 5*self.max_dim
-        #     inputs = str_id.repeat(batch_size, 1)
-
-        #     random_coordinates = torch.randint(
-        #         0, self.len_coordinates, (batch_size,), device=self.device
-        #     )
-
-        #     random_indices = torch.randint(
-        #         0, len(self.indices), (batch_size,), device=self.device
-        #     )
-
-        #     inputs[torch.arange(batch_size), random_coordinates] = random_indices
-
-        #     predictions = surrogate_model(inputs).T
- 
-        #     top_indices = (
-        #         torch.topk(predictions, num_samples).indices.view(-1).int()
-        #     )
-
-        #     top_inputs = inputs[top_indices, :]
-        #     top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-        #     top_strings = top_strings + [input_string]
-
-
-        # Solution 2 : multiple token multiple coordinates
-        # with torch.no_grad():
-        #     # for _ in range(3): # Debug
-
-        
-        #     str_id = self._encode_string(input_string)
-
-        #     batch_size = 5*self.max_dim
-        #     # batch_size = 1 # Debug
-        #     inputs = str_id.repeat(batch_size, 1)
-        #     # inputs_copy = inputs  # Keep original inputs for comparison (Debug)
-
-        #     # Randomly decide the number of tokens to modify for each batch row
-        #     num_modifications = torch.randint(
-        #         1, self.len_coordinates // 2, (batch_size,), device=self.device
-        #     )
-        #     # print("Number of modifications for each row:", num_modifications.tolist()) # Debug
-
-        #     # Generate random values for each coordinate in the batch
-        #     random_values = torch.rand(batch_size, self.len_coordinates, device=self.device)
-
-        #     # For each row, select the top `num_modifications` smallest random values as True
-        #     thresholds = torch.topk(random_values, num_modifications.max(), dim=1, largest=False).values[:, -1:]
-
-        #     # Create the modification mask by comparing random values to thresholds
-        #     modification_mask = random_values <= thresholds
-        #     # print("Modification mask (True -> modify):") # Debug
-        #     # print(modification_mask.cpu().numpy())  # Convert for easier visualization debug
-
-        #     # Generate random replacement values
-        #     random_replacements = self.indices[
-        #         torch.randint(0, self.indices.size(0), (batch_size, self.len_coordinates), device=self.device)
-        #     ]
-        #     # print("Random replacement values (before modification):") # Debug
-        #     # print(random_replacements.cpu().numpy()) # Debug
-
-        #     # Apply modifications using the mask
-        #     inputs = torch.where(modification_mask, random_replacements, inputs)
-        #     inputs = torch.unique(inputs, dim=0)
-
-        #     # print("Original inputs:") # Debug
-        #     # print(inputs_copy) # Debug
-        #     # print("Modified inputs:") # Debug
-        #     # print(inputs) # Debug
-
-        #     predictions = surrogate_model(inputs).T
-
-        #     top_indices = (
-        #         torch.topk(predictions, num_samples).indices.view(-1).int()
-        #     )
-
-        #     top_inputs = inputs[top_indices, :]
-        #     top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-        #     top_strings = top_strings + [input_string]
-
-
-
-        # Solution 3 : two tokens fixed locations
-        # with torch.no_grad():
-        
-        #     str_id = self._encode_string(input_string)
-
-        #     batch_size = 5*self.max_dim
-        #     inputs = str_id.repeat(batch_size, 1)
-
-        #     # Define a fixed number of tokens to modify
-        #     tokens_to_modify = 2
-
-        #     # Randomly select token indices to modify (same for all rows in the batch)
-        #     random_coordinates = torch.randperm(self.len_coordinates, device=self.device)[:tokens_to_modify]
-
-        #     # Generate random replacement values for the selected coordinates
-        #     random_replacements = self.indices[
-        #         torch.randint(0, self.indices.size(0), (batch_size, tokens_to_modify), device=self.device)
-        #     ]
-
-        #     # Apply the modifications to the 'inputs' tensor at the 'random_coordinates'
-        #     inputs[:, random_coordinates] = random_replacements
-
-        #     predictions = surrogate_model(inputs).T
- 
-        #     top_indices = (
-        #         torch.topk(predictions, num_samples).indices.view(-1).int()
-        #     )
-
-        #     top_inputs = inputs[top_indices, :]
-        #     top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-        #     top_strings = top_strings + [input_string]
-
-        # # Solution 4
-        # with torch.no_grad():
-        
-        #     str_id = self._encode_string(input_string)
-
-        #     batch_size = 5*self.max_dim
-        #     inputs = str_id.repeat(batch_size, 1)
-
-        #     # Generate sequential indices for the batch size
-        #     coordinate_indices = torch.arange(
-        #         self.len_coordinates, 
-        #         device=self.device
-        #         ).repeat(
-        #             batch_size // self.len_coordinates + 1
-        #             )[:batch_size]
-
-        #     # Random replacement values for each coordinate
-        #     random_indices = torch.randint(
-        #         0, len(self.indices), (batch_size,), device=self.device
-        #         )
-
-        #     # Replace one coordinate per batch row
-        #     inputs[torch.arange(batch_size), coordinate_indices] = random_indices
-
-        #     predictions = surrogate_model(inputs).T
- 
-        #     top_indices = (
-        #         torch.topk(predictions, num_samples).indices.view(-1).int()
-        #     )
-
-        #     top_inputs = inputs[top_indices, :]
-        #     top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-        #     top_strings = top_strings + [input_string]
-
-
-        # Solution 5 : Sequential multitoken change
-        current_mod_count = 0
         with torch.no_grad():
-            # for _ in range(10): # Debug
-
-            # Encode the input string into a tensor
-            str_id = self._encode_string(input_string)
-
-            # Batch size (assuming a single batch here for simplicity, can be adjusted later)
-            batch_size = 5 * self.max_dim
-            # batch_size = 1  # Debug
-
-            # Repeat the encoded input across the batch
-            inputs = str_id.repeat(batch_size, 1)
-            inputs_copy = inputs
-
-            # Sequentially increase the number of token modifications
-            max_modifications = self.len_coordinates // 2
-            # Determine the current number of modifications
-            num_modifications = (current_mod_count % max_modifications) + 1
-
-            # Update to keep track of the number of modifications for the next iteration
-            if current_mod_count >= 5:
-                current_mod_count = 0
-            else : 
-                current_mod_count += 1  
+            # Initialize an augmenter
+            # Word-Level Contextual Augmentations (BERT-based)
+            augmenter = naw.ContextualWordEmbsAug(
+                    model_path='bert-base-uncased',  # Pre-trained BERT model
+                    action="substitute",                # Insert words into text
+                    aug_p=0.3,                      # Probability of each token being augmented
+                    aug_min=1,                      # Minimum number of insertions
+                    aug_max=self.len_coordinates // 2,                       # Maximum number of insertions
+                )
             
-            # print(f"Number of tokens to modify: {num_modifications}")  # Debug
+            # Number of perturbations to generate
+            num_perturbations = int(0.01 * self.max_dim)
 
-            # Generate random values for each coordinate in the batch
-            random_values = torch.rand(batch_size, self.len_coordinates, device=self.device)
-
-            # For each row, select the `num_modifications` smallest random coordinates
-            thresholds = torch.topk(random_values, num_modifications, dim=1, largest=False).values[:, -1:]
-            
-            # Create the modification mask by comparing random values to the thresholds
-            modification_mask = random_values <= thresholds
-
-            # Debug: Print the modification mask
-            # print("Modification mask (True -> modify):") # Debug
-            # print(modification_mask.cpu().numpy()) # Debug
-
-            # Generate random replacement values for modified positions
-            random_replacements = self.indices[
-                torch.randint(0, self.indices.size(0), (batch_size, self.len_coordinates), device=self.device)
+            # Use tqdm for a progress bar
+            perturbed_strings = [
+                augmenter.augment(input_string) for _ in tqdm(range(num_perturbations), desc="Generating Perturbations")
             ]
+           
+            # Encode the perturbed strings
+            encoded_inputs = [self._encode_string(perturbed_string[0]) for perturbed_string in perturbed_strings]
             
-            # Debug: Print random replacement values before modification
-            # print("Sequential replacement values (before modification):") # Debug
-            # print(random_replacements.cpu().numpy()) # Debug
+            # Pad all inputs to the maximum length in the batch
+            max_length = max(input.size(0) for input in encoded_inputs)  # Find the max sequence length
+            padded_inputs = [F.pad(input, (0, max_length - input.size(0))) for input in encoded_inputs]
+            inputs = torch.stack(padded_inputs).to(self.device).float()
 
-            # Apply modifications using the mask
-            inputs = torch.where(modification_mask, random_replacements, inputs)
+            # Ensure perturbed strings are tokenized and formatted as IDs
+            # inputs = self.tokenizer_surrogate_model(
+            #     [perturbed_string[0] for perturbed_string in perturbed_strings],  # Extract strings
+            #     padding=True,
+            #     truncation=True,
+            #     return_tensors="pt"
+            # ).input_ids.to(self.device).float()
+            # inputs = torch.stack(inputs).to(self.device).float() 
 
-            # Debug: Show original and modified inputs
-            # print("Original inputs:") # Debug
-            # print(inputs_copy.cpu().numpy()) # Debug
-            # print("Modified inputs:") # Debug
-            # print(inputs.cpu().numpy()) # Debug
+            # Ensure inputs are appropriately reduced
+            projection = torch.nn.Linear(502, 18).to(self.device)  # Create a projection layer if needed
+            inputs = projection(inputs)  # Shape: [502, 512] -> [502, 320]
 
-            # Ensure unique rows in the batch
-            inputs = torch.unique(inputs, dim=0)
-        
-            predictions = surrogate_model(inputs).T
-    
-            top_indices = (
-                torch.topk(predictions, num_samples).indices.view(-1).int()
-            )
 
+            predictions = surrogate_model(inputs).T  # Get predictions for the perturbed prompts
+            
+            # Select the top `num_samples` perturbations based on predictions
+            top_indices = torch.topk(predictions, num_samples).indices.view(-1).int()
             top_inputs = inputs[top_indices, :]
+            
+            # Decode the top perturbations back to text
             top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-            top_strings = top_strings + [input_string]
-
+            top_strings = top_strings + [input_string]  # Include the original input as a fallback
 
         return top_strings
+    
+    # def _load_augmenter(self,):
+    #     with tqdm(total=3, desc="Loading Augmenter") as pbar:
+    #         # Load tokenizer
+    #         pbar.set_description("Loading Tokenizer")
+    #         tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+    #         pbar.update(1)
+
+    #         # Load model
+    #         pbar.set_description("Loading Model")
+    #         model = AutoModel.from_pretrained("bert-base-uncased")
+    #         pbar.update(1)
+
+    #         # Initialize augmenter
+    #         pbar.set_description("Initializing Augmenter")
+    #         augmenter = naw.ContextualWordEmbsAug(
+    #             model_path='bert-base-uncased',  # Pre-trained BERT model
+    #             action="substitute",                # Insert words into text
+    #             aug_p=0.3,                      # Probability of each token being augmented
+    #             aug_min=1,                      # Minimum number of insertions
+    #             aug_max=self.len_coordinates // 2,                       # Maximum number of insertions
+    #         )
+    #         pbar.update(1)
+
+    #     return augmenter
