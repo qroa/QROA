@@ -33,6 +33,7 @@ class HuggingFaceModel(Model):
         "mistral_hf": ("mistralai/Mistral-7B-Instruct-v0.1", "mistral"),
         "falcon_hf": ("tiiuae/falcon-7b-instruct", "falcon"),
         "ministral-8b-instruct": (f"{PROJECT_DIR}/models/Ministral-8B-Instruct-2410", "mistral"),
+        "mistral_nemo": ("mistralai/Mistral-Nemo-Instruct-2407", "mistral"),
     }
 
     def __init__(self, 
