@@ -103,21 +103,21 @@ class AcquisitionFunction(nn.Module):
     def forward(self, surrogate_model, input_string, coordinate, num_samples):
 
         # Solution 0 : QROA
-        # with torch.no_grad():
+        with torch.no_grad():
         
-        #     str_id = self._encode_string(input_string)
+            str_id = self._encode_string(input_string)
                 
-        #     inputs = str_id.repeat(self.max_dim, 1)
-        #     inputs[:, coordinate] = self.indices
-        #     predictions = surrogate_model(inputs).T
+            inputs = str_id.repeat(self.max_dim, 1)
+            inputs[:, coordinate] = self.indices
+            predictions = surrogate_model(inputs).T
  
-        #     top_indices = (
-        #         torch.topk(predictions, num_samples).indices.view(-1).int()
-        #     )
+            top_indices = (
+                torch.topk(predictions, num_samples).indices.view(-1).int()
+            )
 
-        #     top_inputs = inputs[top_indices, :]
-        #     top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-        #     top_strings = top_strings + [input_string]
+            top_inputs = inputs[top_indices, :]
+            top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
+            top_strings = top_strings + [input_string]
 
         
         # Solution 1 : one token random coordinate
@@ -156,7 +156,7 @@ class AcquisitionFunction(nn.Module):
         
         #     str_id = self._encode_string(input_string)
 
-        #     batch_size = 5*self.max_dim
+        #     batch_size = 1*self.max_dim
         #     # batch_size = 1 # Debug
         #     inputs = str_id.repeat(batch_size, 1)
         #     # inputs_copy = inputs  # Keep original inputs for comparison (Debug)
@@ -274,77 +274,77 @@ class AcquisitionFunction(nn.Module):
 
 
         # Solution 5 : Sequential multitoken change
-        current_mod_count = 0
-        with torch.no_grad():
-            # for _ in range(10): # Debug
+        # current_mod_count = 0
+        # with torch.no_grad():
+        #     # for _ in range(10): # Debug
 
-            # Encode the input string into a tensor
-            str_id = self._encode_string(input_string)
+        #     # Encode the input string into a tensor
+        #     str_id = self._encode_string(input_string)
 
-            # Batch size (assuming a single batch here for simplicity, can be adjusted later)
-            batch_size = 5 * self.max_dim
-            # batch_size = 1  # Debug
+        #     # Batch size (assuming a single batch here for simplicity, can be adjusted later)
+        #     batch_size = 5 * self.max_dim
+        #     # batch_size = 1  # Debug
 
-            # Repeat the encoded input across the batch
-            inputs = str_id.repeat(batch_size, 1)
-            inputs_copy = inputs
+        #     # Repeat the encoded input across the batch
+        #     inputs = str_id.repeat(batch_size, 1)
+        #     inputs_copy = inputs
 
-            # Sequentially increase the number of token modifications
-            max_modifications = self.len_coordinates // 2
-            # Determine the current number of modifications
-            num_modifications = (current_mod_count % max_modifications) + 1
+        #     # Sequentially increase the number of token modifications
+        #     max_modifications = self.len_coordinates // 2
+        #     # Determine the current number of modifications
+        #     num_modifications = (current_mod_count % max_modifications) + 1
 
-            # Update to keep track of the number of modifications for the next iteration
-            if current_mod_count >= 5:
-                current_mod_count = 0
-            else : 
-                current_mod_count += 1  
+        #     # Update to keep track of the number of modifications for the next iteration
+        #     if current_mod_count >= 5:
+        #         current_mod_count = 0
+        #     else : 
+        #         current_mod_count += 1  
             
-            # print(f"Number of tokens to modify: {num_modifications}")  # Debug
+        #     # print(f"Number of tokens to modify: {num_modifications}")  # Debug
 
-            # Generate random values for each coordinate in the batch
-            random_values = torch.rand(batch_size, self.len_coordinates, device=self.device)
+        #     # Generate random values for each coordinate in the batch
+        #     random_values = torch.rand(batch_size, self.len_coordinates, device=self.device)
 
-            # For each row, select the `num_modifications` smallest random coordinates
-            thresholds = torch.topk(random_values, num_modifications, dim=1, largest=False).values[:, -1:]
+        #     # For each row, select the `num_modifications` smallest random coordinates
+        #     thresholds = torch.topk(random_values, num_modifications, dim=1, largest=False).values[:, -1:]
             
-            # Create the modification mask by comparing random values to the thresholds
-            modification_mask = random_values <= thresholds
+        #     # Create the modification mask by comparing random values to the thresholds
+        #     modification_mask = random_values <= thresholds
 
-            # Debug: Print the modification mask
-            # print("Modification mask (True -> modify):") # Debug
-            # print(modification_mask.cpu().numpy()) # Debug
+        #     # Debug: Print the modification mask
+        #     # print("Modification mask (True -> modify):") # Debug
+        #     # print(modification_mask.cpu().numpy()) # Debug
 
-            # Generate random replacement values for modified positions
-            random_replacements = self.indices[
-                torch.randint(0, self.indices.size(0), (batch_size, self.len_coordinates), device=self.device)
-            ]
+        #     # Generate random replacement values for modified positions
+        #     random_replacements = self.indices[
+        #         torch.randint(0, self.indices.size(0), (batch_size, self.len_coordinates), device=self.device)
+        #     ]
             
-            # Debug: Print random replacement values before modification
-            # print("Sequential replacement values (before modification):") # Debug
-            # print(random_replacements.cpu().numpy()) # Debug
+        #     # Debug: Print random replacement values before modification
+        #     # print("Sequential replacement values (before modification):") # Debug
+        #     # print(random_replacements.cpu().numpy()) # Debug
 
-            # Apply modifications using the mask
-            inputs = torch.where(modification_mask, random_replacements, inputs)
+        #     # Apply modifications using the mask
+        #     inputs = torch.where(modification_mask, random_replacements, inputs)
 
-            # Debug: Show original and modified inputs
-            # print("Original inputs:") # Debug
-            # print(inputs_copy.cpu().numpy()) # Debug
-            # print("Modified inputs:") # Debug
-            # print(inputs.cpu().numpy()) # Debug
+        #     # Debug: Show original and modified inputs
+        #     # print("Original inputs:") # Debug
+        #     # print(inputs_copy.cpu().numpy()) # Debug
+        #     # print("Modified inputs:") # Debug
+        #     # print(inputs.cpu().numpy()) # Debug
 
-            # Ensure unique rows in the batch
-            inputs = torch.unique(inputs, dim=0)
+        #     # Ensure unique rows in the batch
+        #     inputs = torch.unique(inputs, dim=0)
         
-            predictions = surrogate_model(inputs).T
+        #     predictions = surrogate_model(inputs).T
     
-            top_indices = (
-                torch.topk(predictions, num_samples).indices.view(-1).int()
-            )
+        #     top_indices = (
+        #         torch.topk(predictions, num_samples).indices.view(-1).int()
+        #     )
 
-            top_inputs = inputs[top_indices, :]
-            top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-            top_strings = top_strings + [input_string]
+        #     top_inputs = inputs[top_indices, :]
+        #     top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
+        #     top_strings = top_strings + [input_string]
 
 
         return top_strings
