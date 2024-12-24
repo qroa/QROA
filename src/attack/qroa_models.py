@@ -154,7 +154,7 @@ class AcquisitionFunction(nn.Module):
                 random_rows = torch.randint(0, 2, (batch_size,), device=self.device)
                 indices_where_one = torch.nonzero(random_rows == 1, as_tuple=True)[0]
                 random_indices = torch.randint(0, len(self.indices), (len(indices_where_one) ,), device=self.device)
-                random_indices = torch.multinomial(self.counts, len(indices_where_one), replacement=True)
+                random_indices = torch.multinomial(1/self.counts, len(indices_where_one), replacement=True)
                 inputs[indices_where_one, coordinate] = self.indices[random_indices]
 
             inputs = torch.unique(inputs, dim=0)
