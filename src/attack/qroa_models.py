@@ -142,13 +142,13 @@ class AcquisitionFunction(nn.Module):
         with torch.no_grad():
 
             inputs = []
+            batch_size = self.max_dim*5
             for s in input_string:
                 str_id = self._encode_string(s)
-                batch_size = self.max_dim*2
-                inputs.append(str_id.repeat(batch_size, 1))
+                inputs.append(str_id.repeat(batch_size//len(input_string), 1))
             inputs = torch.cat(inputs, dim=0)
             print(inputs.shape)
-            for coodinate in range(self.len_coordinates):
+            for coordinate in range(self.len_coordinates):
 
                 random_rows = torch.randint(0, 2, (batch_size,), device=self.device)
                 indices_where_one = torch.nonzero(random_rows == 1, as_tuple=True)[0]
