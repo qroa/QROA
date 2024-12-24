@@ -147,7 +147,7 @@ class AcquisitionFunction(nn.Module):
                 batch_size = self.max_dim//2
                 inputs.append(str_id.repeat(batch_size, 1))
             inputs = torch.cat(inputs, dim=0)
-
+            print(inputs.shape)
             for coodinate in range(self.len_coordinates):
 
                 random_rows = torch.randint(0, 2, (batch_size,), device=self.device)
