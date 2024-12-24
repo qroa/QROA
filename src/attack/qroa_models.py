@@ -141,10 +141,17 @@ class AcquisitionFunction(nn.Module):
 
         with torch.no_grad():
             str_id = self._encode_string(input_string)
-            inputs = str_id.repeat(self.max_dim, 1)
+            batch_size = self.max_dim*2
+            inputs = str_id.repeat(batch_size, 1)
 
-            coordinate = torch.randint(0, self.len_coordinates, (self.max_dim,))
-            inputs[self.indices, coordinate] = self.indices
+            for coodinate in range(self.len_coordinates):
+
+                random_rows = torch.randint(0, 2, (batch_size,), device=self.device)
+                indices_where_one = torch.nonzero(random_rows == 1, as_tuple=True)[0]
+                random_indices = torch.randint(0, len(self.indices), (len(indices_where_one) ,), device=self.device)
+                inputs[indices_where_one, coordinate] = self.indices[random_indices]
+
+            inputs = torch.unique(inputs, dim=0)
 
             # inputs[:, coordinate] = self.indices
             predictions = surrogate_model(inputs).T
