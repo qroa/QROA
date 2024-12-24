@@ -166,6 +166,6 @@ class AcquisitionFunction(nn.Module):
 
             top_inputs = inputs[top_indices, :]
             top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-            #top_strings = top_strings + [input_string]
+            top_strings = top_strings + input_string
 
         return top_strings
