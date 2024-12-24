@@ -143,7 +143,7 @@ class AcquisitionFunction(nn.Module):
 
             inputs = []
             for s in input_string:
-                str_id = self._encode_string(input_string)
+                str_id = self._encode_string(s)
                 batch_size = self.max_dim//2
                 inputs.append(str_id.repeat(batch_size, 1))
             inputs = torch.cat(inputs, dim=0)
