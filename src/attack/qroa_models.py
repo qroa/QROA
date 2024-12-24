@@ -83,6 +83,7 @@ class AcquisitionFunction(nn.Module):
         self.len_coordinates = len_coordinates
         self.device = device
         self.indices = torch.arange(0, max_dim).long().to(device)
+        self.counts = torch.ones_like(self.indices).float().to(device)
         self.tokenizer_surrogate_model = tokenizer_surrogate_model
         self.word_list = self.tokenizer_surrogate_model.batch_decode(
             list(self.tokenizer_surrogate_model.vocab.values())
@@ -153,6 +154,7 @@ class AcquisitionFunction(nn.Module):
                 random_rows = torch.randint(0, 2, (batch_size,), device=self.device)
                 indices_where_one = torch.nonzero(random_rows == 1, as_tuple=True)[0]
                 random_indices = torch.randint(0, len(self.indices), (len(indices_where_one) ,), device=self.device)
+                random_indices = torch.multinomial(self.counts, len(indices_where_one), replacement=True)
                 inputs[indices_where_one, coordinate] = self.indices[random_indices]
 
             inputs = torch.unique(inputs, dim=0)
@@ -167,5 +169,9 @@ class AcquisitionFunction(nn.Module):
             top_inputs = inputs[top_indices, :]
             top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
             top_strings = top_strings + input_string
+
+            all_triggers_encoded = self._encode_batch(top_strings)
+            count_candidates = torch.nn.functional.one_hot(all_triggers_encoded, num_classes=self.max_dim).sum(dim=1).float()
+            self.counts = self.counts + count_candidates.sum(dim=0)
 
         return top_strings
