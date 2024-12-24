@@ -140,9 +140,13 @@ class AcquisitionFunction(nn.Module):
         #     top_strings = top_strings + [input_string]
 
         with torch.no_grad():
-            str_id = self._encode_string(input_string)
-            batch_size = self.max_dim*2
-            inputs = str_id.repeat(batch_size, 1)
+
+            inputs = []
+            for s in input_string:
+                str_id = self._encode_string(input_string)
+                batch_size = self.max_dim//2
+                inputs.append(str_id.repeat(batch_size, 1))
+            inputs = torch.cat(inputs, dim=0)
 
             for coodinate in range(self.len_coordinates):
 

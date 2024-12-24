@@ -14,6 +14,7 @@ from src.attack.score_function import scoring_function_factory
 from src.attack.qroa_models import SurrogateModel, AcquisitionFunction
 from src.utils import calculate_ucb, calculate_log_prob
 from src.global_constants import PERPLEXITY_MODEL_NAME
+import heapq
 
 
 class TriggerGenerator:
@@ -307,12 +308,13 @@ class TriggerGenerator:
                     
                     # Select the current best trigger based on UCB
                     trigger = max(self.h, key=lambda key: ucb_b[key])
+                    top_triggers = heapq.nlargest(5, self.h, key=lambda key: ucb_b[key])
 
                     # Select a random token position to modify
                     current_coordinate = self.coordinates[current_epoch % self.coordinates_length]
 
                     # Generate top k new trigger variants by modifying the current trigger at the chosen position
-                    top_k_triggers = self.acquisition_function(self.surrogate_model, trigger, current_coordinate, self.topk)
+                    top_k_triggers = self.acquisition_function(self.surrogate_model, top_triggers, current_coordinate, self.topk)
 
                     # Eval Phase Phase 
                     score_array = self._eval_triggers(instruction, top_k_triggers)
