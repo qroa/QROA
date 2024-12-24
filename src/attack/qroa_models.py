@@ -163,7 +163,7 @@ class AcquisitionFunction(nn.Module):
 
             # Randomly decide the number of tokens to modify for each batch row
             num_modifications = torch.randint(
-                1, self.len_coordinates, (batch_size,), device=self.device
+                1, self.len_coordinates//2, (batch_size,), device=self.device
             )
             # print("Number of modifications for each row:", num_modifications.tolist()) # Debug
 
