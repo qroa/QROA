@@ -142,25 +142,25 @@ class AcquisitionFunction(nn.Module):
 
         with torch.no_grad():
 
-            # inputs = []
-            # batch_size = self.max_dim*2
-            # for s in input_string:
-            #     str_id = self._encode_string(s)
-            #     inputs.append(str_id.repeat(batch_size//len(input_string), 1))
-            # inputs = torch.cat(inputs, dim=0)
-            # print(inputs.shape)
-            # for coordinate in range(self.len_coordinates):
+            inputs = []
+            batch_size = self.max_dim*2
+            for s in input_string:
+                str_id = self._encode_string(s)
+                inputs.append(str_id.repeat(batch_size//len(input_string), 1))
+            inputs = torch.cat(inputs, dim=0)
+            print(inputs.shape)
+            for coordinate in range(self.len_coordinates):
 
-            #     random_rows = torch.randint(0, 2, (batch_size,), device=self.device)
-            #     indices_where_one = torch.nonzero(random_rows == 1, as_tuple=True)[0]
-            #     random_indices = torch.randint(0, len(self.indices), (len(indices_where_one) ,), device=self.device)
-            #     # random_indices = torch.multinomial(1/self.counts, len(indices_where_one), replacement=True)
-            #     inputs[indices_where_one, coordinate] = self.indices[random_indices]
+                random_rows = torch.randint(0, 2, (batch_size,), device=self.device)
+                indices_where_one = torch.nonzero(random_rows == 1, as_tuple=True)[0]
+                random_indices = torch.randint(0, len(self.indices), (len(indices_where_one) ,), device=self.device)
+                # random_indices = torch.multinomial(1/self.counts, len(indices_where_one), replacement=True)
+                inputs[indices_where_one, coordinate] = self.indices[random_indices]
 
-            str_id = self._encode_string(input_string[0])
-            inputs = str_id.repeat(self.max_dim, 1)
-            inputs[:, coordinate] = self.indices
-            inputs = torch.unique(inputs, dim=0)
+            # str_id = self._encode_string(input_string[0])
+            # inputs = str_id.repeat(self.max_dim, 1)
+            # inputs[:, coordinate] = self.indices
+            # inputs = torch.unique(inputs, dim=0)
 
             # inputs[:, coordinate] = self.indices
             predictions = surrogate_model(inputs).T
