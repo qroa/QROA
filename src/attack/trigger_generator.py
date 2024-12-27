@@ -308,29 +308,7 @@ class TriggerGenerator:
                     
                     # Select the current best trigger based on UCB
                     trigger = max(self.h, key=lambda key: ucb_b[key])
-                    top_triggers = heapq.nlargest(1, self.h, key=lambda key: ucb_b[key])
-
-                    # Calculate Boltzmann weights
-                    boltzmann_weights = {
-                        key: np.exp(self.h[key] / 1) for key in self.h
-                    }
-                    total_weight = sum(boltzmann_weights.values())
-
-                    # Normalize weights to probabilities
-                    boltzmann_probs = {
-                        key: boltzmann_weights[key] / total_weight for key in boltzmann_weights
-                    }
-
-                    # Select a trigger based on Boltzmann probabilities
-                    trigger = np.random.choice(
-                        list(boltzmann_probs.keys()),
-                        p=list(boltzmann_probs.values())
-                    )
-
-                    # Optionally, get the top triggers sorted by probability if needed
-                    top_triggers = heapq.nlargest(
-                        1, boltzmann_probs, key=lambda key: boltzmann_probs[key]
-                    )
+                    top_triggers = heapq.nlargest(10, self.h, key=lambda key: ucb_b[key])
 
                     # Select a random token position to modify
                     current_coordinate = self.coordinates[current_epoch % self.coordinates_length]
