@@ -144,12 +144,12 @@ class AcquisitionFunction(nn.Module):
 
             inputs = []
             batch_size = self.max_dim*2
-            print(len(input_string))
             for s in input_string:
                 str_id = self._encode_string(s)
                 inputs.append(str_id.repeat(batch_size//len(input_string), 1))
             inputs = torch.cat(inputs, dim=0)
-            print(inputs.shape)
+            batch_size = inputs.shape[0]
+            print(batch_size)
             for coordinate in range(self.len_coordinates):
 
                 random_rows = torch.randint(0, 2, (batch_size,), device=self.device)
