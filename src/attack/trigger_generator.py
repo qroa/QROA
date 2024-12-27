@@ -308,7 +308,7 @@ class TriggerGenerator:
                     
                     # Select the current best trigger based on UCB
                     trigger = max(self.h, key=lambda key: ucb_b[key])
-                    top_triggers = heapq.nlargest(1, self.h, key=lambda key: ucb_b[key])
+                    top_triggers = heapq.nlargest(10, self.h, key=lambda key: ucb_b[key])
 
                     # Select a random token position to modify
                     current_coordinate = self.coordinates[current_epoch % self.coordinates_length]
