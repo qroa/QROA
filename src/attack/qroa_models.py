@@ -109,6 +109,7 @@ class AcquisitionFunction(nn.Module):
                     add_special_tokens=False,
                 ).to(self.device)['input_ids']
 
+        print(all_triggers_encoded)
         count_candidates = torch.nn.functional.one_hot(all_triggers_encoded, num_classes=self.max_dim).sum(dim=1).float()
         self.counts_tokens = count_candidates.sum(dim=0)
 
