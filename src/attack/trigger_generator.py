@@ -308,7 +308,7 @@ class TriggerGenerator:
                     
                     # Select the current best trigger based on UCB
                     trigger = max(self.h, key=lambda key: ucb_b[key])
-                    top_triggers = heapq.nlargest(1, self.h, key=lambda key: ucb_b[key])
+                    top_triggers = heapq.nlargest(5, self.h, key=lambda key: ucb_b[key])
 
                     # Select a random token position to modify
                     current_coordinate = self.coordinates[current_epoch % self.coordinates_length]
@@ -436,7 +436,7 @@ class TriggerValidator:
     def _eval_triggers(self, instruction: str, triggers: List[str]) -> torch.Tensor:
 
         instructions = [instruction for _ in triggers]
-        prompts = [t + instruction for t in triggers]
+        prompts = [instruction + t for t in triggers]
         generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
         score_array = self.scoring_function.score(instructions, generations, prompts)
 
