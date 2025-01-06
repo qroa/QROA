@@ -436,7 +436,7 @@ class TriggerValidator:
     def _eval_triggers(self, instruction: str, triggers: List[str]) -> torch.Tensor:
 
         instructions = [instruction for _ in triggers]
-        prompts = [t + instruction for t in triggers]
+        prompts = [instruction + t for t in triggers]
         generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
         score_array = self.scoring_function.score(instructions, generations, prompts)
 
