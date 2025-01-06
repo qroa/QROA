@@ -167,7 +167,7 @@ class AcquisitionFunction(nn.Module):
         with torch.no_grad():
 
             inputs = []
-            batch_size = self.max_dim
+            batch_size = self.max_dim*2
             for s in input_string:
                 str_id = self._encode_string(s)
                 inputs.append(str_id.repeat(batch_size//len(input_string), 1))
