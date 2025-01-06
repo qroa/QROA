@@ -218,7 +218,7 @@ class TriggerGenerator:
 
         # Create a list of full prompts by appending each trigger to the instruction
         instructions = [instruction for _ in triggers]  # Replicate the instruction for each trigger
-        prompts = [instruction + t for t in triggers]   # Combine the instruction with each trigger
+        prompts = [t + instruction for t in triggers]   # Combine the instruction with each trigger
 
         # Use the language model to generate responses for each prompt
         generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
@@ -436,7 +436,7 @@ class TriggerValidator:
     def _eval_triggers(self, instruction: str, triggers: List[str]) -> torch.Tensor:
 
         instructions = [instruction for _ in triggers]
-        prompts = [instruction + t for t in triggers]
+        prompts = [t + instruction for t in triggers]
         generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
         score_array = self.scoring_function.score(instructions, generations, prompts)
 
