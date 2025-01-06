@@ -184,7 +184,7 @@ class AcquisitionFunction(nn.Module):
             # str_id = self._encode_string(input_string[0])
             # inputs = str_id.repeat(self.max_dim, 1)
             # inputs[:, coordinate] = self.indices
-            # inputs = torch.unique(inputs, dim=0)
+            inputs = torch.unique(inputs, dim=0)
 
             # inputs[:, coordinate] = self.indices
             predictions = surrogate_model(inputs).T
