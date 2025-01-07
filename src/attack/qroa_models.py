@@ -156,7 +156,7 @@ class AcquisitionFunction(nn.Module):
         
             str_id = self._encode_string(input_string)
 
-            batch_size = 1*self.max_dim
+            batch_size = 5*self.max_dim
             # batch_size = 1 # Debug
             inputs = str_id.repeat(batch_size, 1)
             # inputs_copy = inputs  # Keep original inputs for comparison (Debug)
