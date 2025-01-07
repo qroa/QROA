@@ -51,6 +51,7 @@ def main(input_file, auth_token):
     # model = "mistral_hf"            -> https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1
     # model = "falcon_hf"             -> https://huggingface.co/tiiuae/falcon-7b-instruct
     # model = "gpt-3.5-turbo-0613"    -> gpt-3.5-turbo-0613
+    # model = "gpt-4o-2024-11-20"       -> gpt-4o-2024-11-20
     # model = "mistral-large-latest"  -> mistral-large-latest
     # model = "ministral-8b-instruct" -> https://huggingface.co/mistralai/Ministral-8B-Instruct-2410
     # model = "mistral_nemo"          -> https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407
