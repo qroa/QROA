@@ -136,7 +136,8 @@ class AcquisitionFunction(nn.Module):
                 ).to(self.device)['input_ids']
 
     def forward(self, surrogate_model, input_string, coordinate, num_samples):
-
+        
+        input_string = [input_string]
         # top_strings = []
         
         # with torch.no_grad():
