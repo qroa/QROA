@@ -85,31 +85,31 @@ class JailBreak:
         logging_generator = self._read_csv(self.logging_generator_path_csv)
         logging_validator = self._read_csv(self.logging_validator_path_csv)
     
-        for instruction in instructions: 
-            trigger_generator = TriggerGenerator(self.model, 
-                                                self.device, 
-                                                self.config,
-                                                self.reference_embedding, 
-                                                self.tokenizer_surrogate_model)
-            
-            trigger_validator = TriggerValidator(self.model, 
-                                                self.device, 
-                                                self.config)
-            
-            triggers[instruction] = trigger_generator.run(instruction)
+        # for instruction in instructions: 
+        self.trigger_generator = TriggerGenerator(self.model, 
+                                            self.device, 
+                                            self.config,
+                                            self.reference_embedding, 
+                                            self.tokenizer_surrogate_model)
+        
+        self.trigger_validator = TriggerValidator(self.model, 
+                                            self.device, 
+                                            self.config)
+        
+        triggers[instructions[0]] = self.trigger_generator.run(instructions)
 
-            logging_generator = pd.concat([logging_generator, trigger_generator.return_logging()], ignore_index=True)
-            logging_generator.to_json(self.logging_generator_path)
-            logging_generator.to_csv(self.logging_generator_path_csv, index=False)
-            with open(self.triggers_path, 'w') as f:
-                json.dump(triggers, f)
+        logging_generator = pd.concat([logging_generator, self.trigger_generator.return_logging()], ignore_index=True)
+        logging_generator.to_json(self.logging_generator_path)
+        logging_generator.to_csv(self.logging_generator_path_csv, index=False)
+        with open(self.triggers_path, 'w') as f:
+            json.dump(triggers, f)
 
-            triggers_validate[instruction] = trigger_validator.run(instruction, triggers[instruction])
+        triggers_validate[instructions[0]] = self.trigger_validator.run(instructions, triggers[instructions[0]])
 
-            logging_validator = pd.concat([logging_validator, trigger_validator.return_logging()], ignore_index=True)
-            logging_validator.to_json(self.logging_validator_path)
-            logging_validator.to_csv(self.logging_validator_path_csv, index=False)
-            with open(self.triggers_validate_path, 'w') as f:
-                json.dump(triggers_validate, f)
+        logging_validator = pd.concat([logging_validator, self.trigger_validator.return_logging()], ignore_index=True)
+        logging_validator.to_json(self.logging_validator_path)
+        logging_validator.to_csv(self.logging_validator_path_csv, index=False)
+        with open(self.triggers_validate_path, 'w') as f:
+            json.dump(triggers_validate, f)
 
         return  triggers, triggers_validate
