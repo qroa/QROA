@@ -186,30 +186,23 @@ class TriggerGenerator:
             self.D.pop(0)
 
     def _eval_triggers(self, list_instruction: List[str], triggers: List[str]) -> torch.Tensor:
-        """
-        Evaluates a list of triggers by appending them to an instruction and observing the language model's response.
 
-        This function operates by generating a combined prompt from the provided instruction and each trigger, then querying
-        the language model to generate text based on these prompts. The responses are evaluated using a scoring function
-        that quantifies how well the responses align with the desired outcome (e.g., eliciting harmful content).
+        scores = []
 
-        Args:
-            list_instruction List[str]: The list of instructions to evaluate the triggers.
-            triggers (List[str]): A list of trigger strings to be tested.
+        for instruction in list_instruction: 
+            # Create a list of full prompts by appending each trigger to the instruction
+            instructions = [instruction] * len(triggers)
+            prompts = [instructions[i] + t for i, t in enumerate(triggers)]
 
-        Returns:
-            torch.Tensor: An array of scores representing the effectiveness of each trigger.
-        """
+            # Use the language model to generate responses for each prompt
+            generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
 
-        # Create a list of full prompts by appending each trigger to the instruction
-        instructions = random.choices(list_instruction, k=len(triggers))
-        prompts = [instructions[i] + t for i, t in enumerate(triggers)]   # Combine the instructions with each trigger
+            # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
+            score_instruction = self.scoring_function.score(instructions, generations, prompts)
 
-        # Use the language model to generate responses for each prompt
-        generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+            scores.append(score_instruction)
 
-        # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
-        score_array = self.scoring_function.score(instructions, generations, prompts)
+        score_array = torch.stack(scores).mean(dim=0)
 
         return score_array
 
@@ -422,15 +415,22 @@ class TriggerValidator:
 
     def _eval_triggers(self, list_instruction: List[str], triggers: List[str]) -> torch.Tensor:
 
-        # Create a list of full prompts by appending each trigger to the instruction
-        instructions = random.choices(list_instruction, k=len(triggers))
-        prompts = [instructions[i] + t for i, t in enumerate(triggers)]    # Combine the instruction with each trigger
+        scores = []
 
-        # Use the language model to generate responses for each prompt
-        generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+        for instruction in list_instruction: 
+            # Create a list of full prompts by appending each trigger to the instruction
+            instructions = [instruction] * len(triggers)
+            prompts = [instructions[i] + t for i, t in enumerate(triggers)]
 
-        # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
-        score_array = self.scoring_function.score(instructions, generations, prompts)
+            # Use the language model to generate responses for each prompt
+            generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+
+            # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
+            score_instruction = self.scoring_function.score(instructions, generations, prompts)
+
+            scores.append(score_instruction)
+
+        score_array = torch.stack(scores).mean(dim=0)
 
         return score_array
     
