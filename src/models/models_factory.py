@@ -30,16 +30,16 @@ def get_model(model_name: str,
         return HuggingFaceModel(
             auth_token=auth_token,
             device=device, 
-            system_prompt=system_prompt, 
+            system_prompt=system_prompt,
             model_name=model_name,
             temperature=temperature,
             top_p=top_p,
             apply_defense_methods=apply_defense_methods)
     elif model_name in OpenaiModel.model_details:
-        model =  OpenaiModel(
-            auth_token=auth_token, 
-            device=device, 
-            system_prompt=system_prompt, 
+        model = OpenaiModel(
+            auth_token=auth_token,
+            device=device,
+            system_prompt=system_prompt,
             model_name=model_name,
             temperature=temperature,
             top_p=top_p,

@@ -218,12 +218,13 @@ class OpenaiModel(Model):
     model_details = {
         "gpt-3.5-turbo-0613",
         "gpt-3.5-turbo-1106",
+        "gpt-3.5-turbo-0125",
         "gpt-4-0613"}
     
     def __init__(
-        self, 
-        auth_token: str, 
-        device: str, 
+        self,
+        auth_token: str,
+        device: str,
         system_prompt: str,
         model_name: str,
         temperature: float,
