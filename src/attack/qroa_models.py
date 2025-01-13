@@ -31,11 +31,11 @@ class SurrogateModel(nn.Module):
         self.emb = ref_emb.clone()
         self.emb.requires_grad = False 
 
-        self.conv1 = nn.Conv1d(self.emb_dim, 128, kernel_size=1)
-        self.fc1 = nn.Linear(128*self.len_coordinates, 256)
-        self.fc2 = nn.Linear(256, 128)
-        self.fc3 = nn.Linear(128, 32)
-        self.fc4 = nn.Linear(32, 1)
+
+        self.conv1 = nn.Conv1d(self.emb_dim, 32, kernel_size=1)
+        self.fc1 = nn.Linear(32*self.len_coordinates, 128)
+        self.fc2 = nn.Linear(128, 32)
+        self.fc3 = nn.Linear(32, 1)
 
         #self.fc1 = nn.Linear(self.emb_dim*self.len_coordinates, 128)
 
@@ -53,8 +53,6 @@ class SurrogateModel(nn.Module):
         x = self.fc2(x)
         x = F.relu(x)
         x = self.fc3(x)
-        x = F.relu(x)
-        x = self.fc4(x)
         return x
 
 
