@@ -319,8 +319,10 @@ class TriggerGenerator:
                 self.max_n_history.append(max_n)
 
                 prompt = list_instruction+[trigger]
-                # progress_bar.set_description(f"Score : {self.h[trigger]}, Loss: {self.loss:.4f}, Max n: {max_n}")
-                progress_bar.set_description(f"Score : {self.h[trigger]}, Prompt : {[prompt]}, Loss: {self.loss:.4f}, Max n: {max_n}")
+
+                progress_bar.set_description(f"Score : {self.h[trigger]}, Trigger : {trigger}, Loss: {self.loss:.4f}, Max n: {max_n}")
+                print()
+
                 if (self.h[trigger]>self.threshold) and (self.temperature==0):
                         break
                     # resampled_triggers = [trigger]*self.nb_samples
