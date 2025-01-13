@@ -219,6 +219,7 @@ class OpenaiModel(Model):
         "gpt-3.5-turbo-0613",
         "gpt-3.5-turbo-1106",
         "gpt-3.5-turbo-0125",
+        "gpt-4-turbo",
         "chatgpt-4o-latest",
         "gpt-4o-2024-11-20",
         "gpt-4-0613"}
