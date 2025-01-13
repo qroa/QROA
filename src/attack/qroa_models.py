@@ -29,8 +29,7 @@ class SurrogateModel(nn.Module):
         self.emb_dim = ref_emb.shape[1]
         self.len_coordinates = len_coordinates
         self.emb = ref_emb.clone()
-        self.emb.requires_grad = False 
-
+        self.emb.requires_grad = False
 
         self.conv1 = nn.Conv1d(self.emb_dim, 32, kernel_size=1)
         self.fc1 = nn.Linear(32*self.len_coordinates, 128)
