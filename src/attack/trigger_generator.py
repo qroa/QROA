@@ -68,7 +68,14 @@ class TriggerGenerator:
         self.p_value = config["p_value"]  # Statistical significance level.
 
         self.reference_embedding = reference_embedding  # Reference Embeddings used by the surrogate model.
+
         self.tokenizer_surrogate_model = tokenizer_surrogate_model  # Tokenizer for processing text inputs.
+        self.surrogate_model = SurrogateModel(self.coordinates_length, self.reference_embedding).to(self.device)
+        
+        from transformers import BertTokenizer, BertModel
+        self.tokenizer_surrogate_model = BertTokenizer.from_pretrained('bert-base-uncased')
+        self.tokenizer_surrogate_model.pad_token_id = self.tokenizer_surrogate_model.unk_token_id
+        self.surrogate_model = BertModel.from_pretrained('bert-base-uncased').to(self.device)
 
         # Scoring function to evaluate trigger effectiveness:
         self.scoring_function = scoring_function_factory(self.scoring_type, self.device)
@@ -76,7 +83,6 @@ class TriggerGenerator:
         self.token_count = reference_embedding.shape[0]  # Number of tokens in the embedding.
 
         # Initializing surrogate and acquisition models for optimization:
-        self.surrogate_model = SurrogateModel(self.coordinates_length, self.reference_embedding).to(self.device)
         self.acquisition_function = AcquisitionFunction(self.token_count, self.coordinates_length, self.device, self.tokenizer_surrogate_model)
 
         # Optimizer for the surrogate model:
