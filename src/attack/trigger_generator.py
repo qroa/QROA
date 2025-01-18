@@ -72,11 +72,6 @@ class TriggerGenerator:
         self.tokenizer_surrogate_model = tokenizer_surrogate_model  # Tokenizer for processing text inputs.
         self.surrogate_model = SurrogateModel(self.coordinates_length, self.reference_embedding).to(self.device)
         
-        from transformers import BertTokenizer, BertModel
-        self.tokenizer_surrogate_model = BertTokenizer.from_pretrained('bert-base-uncased')
-        self.tokenizer_surrogate_model.pad_token_id = self.tokenizer_surrogate_model.unk_token_id
-        self.surrogate_model = BertModel.from_pretrained('bert-base-uncased').to(self.device)
-
         # Scoring function to evaluate trigger effectiveness:
         self.scoring_function = scoring_function_factory(self.scoring_type, self.device)
 
