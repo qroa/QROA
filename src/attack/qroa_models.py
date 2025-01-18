@@ -26,40 +26,32 @@ class SurrogateModel(nn.Module):
     def __init__(self, len_coordinates, ref_emb):
         super(SurrogateModel, self).__init__()
 
-        # self.emb_dim = ref_emb.shape[1]
-        # self.len_coordinates = len_coordinates
-        # self.emb = ref_emb.clone()
-        # self.emb.requires_grad = False
+        self.emb_dim = ref_emb.shape[1]
+        self.len_coordinates = len_coordinates
+        self.emb = ref_emb.clone()
+        self.emb.requires_grad = False
 
-        # self.conv1 = nn.Conv1d(self.emb_dim, 32, kernel_size=1)
-        # self.fc1 = nn.Linear(32*self.len_coordinates, 128)
-        # self.fc2 = nn.Linear(128, 32)
-        # self.fc3 = nn.Linear(32, 1)
-
-        from transformers import BertModel
-        self.backbone = BertModel.from_pretrained('bert-base-uncased')
-        self.fc4 = nn.Linear(768, 1)
+        self.conv1 = nn.Conv1d(self.emb_dim, 32, kernel_size=1)
+        self.fc1 = nn.Linear(32*self.len_coordinates, 128)
+        self.fc2 = nn.Linear(128, 32)
+        self.fc3 = nn.Linear(32, 1)
 
         #self.fc1 = nn.Linear(self.emb_dim*self.len_coordinates, 128)
 
     def forward(self, x):
 
-        x = self.backbone(x).last_hidden_state
-        x = x.mean(dim=1)
-        x = self.fc4(x)
+        str_emb = self.emb[x]
 
-        # str_emb = self.emb[x]
-
-        # # x = str_emb
-        # x = str_emb.transpose(1, 2)
-        # x = F.relu(self.conv1(x))
+        # x = str_emb
+        x = str_emb.transpose(1, 2)
+        x = F.relu(self.conv1(x))
         
-        # x = torch.flatten(x, start_dim=1)
-        # x = self.fc1(x)
-        # x = F.relu(x)
-        # x = self.fc2(x)
-        # x = F.relu(x)
-        # x = self.fc3(x)
+        x = torch.flatten(x, start_dim=1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.fc2(x)
+        x = F.relu(x)
+        x = self.fc3(x)
         return x
 
 
@@ -175,7 +167,7 @@ class AcquisitionFunction(nn.Module):
         with torch.no_grad():
 
             inputs = []
-            batch_size = 15000 #self.max_dim//5
+            batch_size = self.max_dim//5
             for s in input_string:
                 str_id = self._encode_string(s)
                 inputs.append(str_id.repeat(batch_size//len(input_string), 1))
