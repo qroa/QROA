@@ -26,15 +26,15 @@ class SurrogateModel(nn.Module):
     def __init__(self, len_coordinates, ref_emb):
         super(SurrogateModel, self).__init__()
 
-        self.emb_dim = ref_emb.shape[1]
-        self.len_coordinates = len_coordinates
-        self.emb = ref_emb.clone()
-        self.emb.requires_grad = False
+        # self.emb_dim = ref_emb.shape[1]
+        # self.len_coordinates = len_coordinates
+        # self.emb = ref_emb.clone()
+        # self.emb.requires_grad = False
 
-        self.conv1 = nn.Conv1d(self.emb_dim, 32, kernel_size=1)
-        self.fc1 = nn.Linear(32*self.len_coordinates, 128)
-        self.fc2 = nn.Linear(128, 32)
-        self.fc3 = nn.Linear(32, 1)
+        # self.conv1 = nn.Conv1d(self.emb_dim, 32, kernel_size=1)
+        # self.fc1 = nn.Linear(32*self.len_coordinates, 128)
+        # self.fc2 = nn.Linear(128, 32)
+        # self.fc3 = nn.Linear(32, 1)
 
         from transformers import BertModel
         self.backbone = BertModel.from_pretrained('bert-base-uncased')
