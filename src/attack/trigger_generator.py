@@ -47,6 +47,7 @@ class TriggerGenerator:
         """
             
         self.model = model  # Language model for response generation.
+        self.model_name = model.model_name
         self.device = device  # Device (CPU/GPU) for computations.
         self.config = config  # Configurations such as epochs, batch size, etc.
 
@@ -388,7 +389,7 @@ class TriggerGenerator:
 
     def _plot_umap(self):
         # logging_generator.json contains the triggers generated and its associated score among other attributes
-        file_path = f'../logs/{self.model}/logging_generator.csv'
+        file_path = f'../logs/{self.model_name}/logging_generator.csv'
         with open(file_path, 'r') as f:
             df = pd.read_csv(f)
 
