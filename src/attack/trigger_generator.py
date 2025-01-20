@@ -9,6 +9,8 @@ import pandas as pd
 import numpy as np
 import scipy.stats as stats
 from transformers import AutoTokenizer, AutoModelForCausalLM
+import umap
+from sentence_transformers import SentenceTransformer
 
 from src.attack.score_function import scoring_function_factory
 from src.attack.qroa_models import SurrogateModel, AcquisitionFunction
@@ -341,7 +343,7 @@ class TriggerGenerator:
 
             return list(self.best_triggers)
 
-    def plot_score_loss_n(self):
+    def _plot_score_loss_n(self):
         # Create a figure for the plots
         plt.figure(figsize=(12, 6))
 
@@ -380,11 +382,57 @@ class TriggerGenerator:
         plt.savefig("plot.png")
         plt.show()
 
+    def _plot_umap(self):
+        # logging_generator.json contains the triggers generated and its associated score among other attributes
+        file_path = f'../logs/{self.model}/logging_generator.csv'
+        with open(file_path, 'r') as f:
+            df = pd.read_csv(f)
+
+        df['average_cumulative_score'] = df['average_score'].cumsum() / (df.index + 1)
+
+        # Load model
+        model = SentenceTransformer("all-MiniLM-L6-v2")
+
+        # Generate embeddings for the triggers
+        trigger_embeddings = model.encode(df['trigger'].tolist())
+
+        # Reduce the dimensions using UMAP
+        umap_model = umap.UMAP(n_neighbors=15, min_dist=0.1, metric='cosine')
+
+        # Fit and transform the Sentence-BERT embeddings
+        umap_embedding = umap_model.fit_transform(trigger_embeddings)
+
+        df['UMAP_1'] = umap_embedding[:, 0]
+        df['UMAP_2'] = umap_embedding[:, 1]
+
+        # Scatter plot
+        plt.figure(figsize=(10, 8))
+        scatter = plt.scatter(
+            df['UMAP_1'],
+            df['UMAP_2'],
+            c=df['average_cumulative_score'],
+            cmap="inferno",
+            s=5
+        )
+
+        # Colorbar
+        cbar = plt.colorbar(scatter, label="Cumulative Average Score")
+        cbar.set_alpha(1)
+
+        # Labels and title
+        plt.title("Sentence-BERT UMAP Embedding", fontsize=16)
+        plt.xlabel("UMAP 1", fontsize=12)
+        plt.ylabel("UMAP 2", fontsize=12)
+        plt.grid(False)
+
+        plt.show()
+
     def run(self, list_instruction):
         """Generates multiple triggers for the given instruction."""
         print(f"Generate triggers for instruction: {list_instruction}")
         triggers = self._generate_triggers(list_instruction)
-        self.plot_score_loss_n()
+        self._plot_score_loss_n()
+        self._plot_umap()
 
         return triggers
 
