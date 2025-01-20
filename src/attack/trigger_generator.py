@@ -1,4 +1,4 @@
-from typing import List, Dict, Set
+from typing import List, Dict, Set, Tuple
 import random
 from tqdm import tqdm
 import matplotlib.pyplot as plt
@@ -9,6 +9,8 @@ import pandas as pd
 import numpy as np
 import scipy.stats as stats
 from transformers import AutoTokenizer, AutoModelForCausalLM
+import umap
+from sentence_transformers import SentenceTransformer
 
 from src.attack.score_function import scoring_function_factory
 from src.attack.qroa_models import SurrogateModel, AcquisitionFunction
@@ -324,8 +326,9 @@ class TriggerGenerator:
                 self.max_n_history.append(max_n)
 
                 prompt = instruction+trigger
-                progress_bar.set_description(f"Score : {self.h[trigger]}, Loss: {self.loss:.4f}, Max n: {max_n}")
-                progress_bar.set_description(f"Score : {self.h[trigger]}, Prompt : {[prompt]}, Loss: {self.loss:.4f}, Max n: {max_n}")
+                progress_bar.set_description(f"Score : {self.h[trigger]}, Trigger : {[trigger]}, Loss: {self.loss:.4f}, Max n: {max_n}")
+                print()
+
                 if (self.h[trigger]>self.threshold) and (self.temperature==0):
                         break
                     # resampled_triggers = [trigger]*self.nb_samples
@@ -383,11 +386,57 @@ class TriggerGenerator:
         plt.savefig("plot.png")
         plt.show()
 
+    def _plot_umap(self):
+        # logging_generator.json contains the triggers generated and its associated score among other attributes
+        file_path = f'../logs/{self.model}/logging_generator.csv'
+        with open(file_path, 'r') as f:
+            df = pd.read_csv(f)
+
+        df['average_cumulative_score'] = df['average_score'].cumsum() / (df.index + 1)
+
+        # Load model
+        model = SentenceTransformer("all-MiniLM-L6-v2")
+
+        # Generate embeddings for the triggers
+        trigger_embeddings = model.encode(df['trigger'].tolist())
+
+        # Reduce the dimensions using UMAP
+        umap_model = umap.UMAP(n_neighbors=15, min_dist=0.1, metric='cosine')
+
+        # Fit and transform the Sentence-BERT embeddings
+        umap_embedding = umap_model.fit_transform(trigger_embeddings)
+
+        df['UMAP_1'] = umap_embedding[:, 0]
+        df['UMAP_2'] = umap_embedding[:, 1]
+
+        # Scatter plot
+        plt.figure(figsize=(10, 8))
+        scatter = plt.scatter(
+            df['UMAP_1'],
+            df['UMAP_2'],
+            c=df['average_cumulative_score'],
+            cmap="inferno",
+            s=5
+        )
+
+        # Colorbar
+        cbar = plt.colorbar(scatter, label="Cumulative Average Score")
+        cbar.set_alpha(1)
+
+        # Labels and title
+        plt.title("Sentence-BERT UMAP Embedding", fontsize=16)
+        plt.xlabel("UMAP 1", fontsize=12)
+        plt.ylabel("UMAP 2", fontsize=12)
+        plt.grid(False)
+
+        plt.show()
+
     def run(self, instruction):
         """Generates multiple triggers for the given instruction."""
         print(f"Generate triggers for instruction: {instruction}")
         triggers = self._generate_triggers(instruction)
         self.plot_score_loss_n()
+        self._plot_umap()
 
         return triggers
 
@@ -451,6 +500,7 @@ class TriggerValidator:
         return self.logging 
     
     def validate(self, instruction: str, triggers: List[str]) -> List[str]:
+        triggers_with_z: List[Tuple[str, float]] = [] # List to store triggers and their z-scores
         
         triggers_validated: Set[str] = set()
                     
@@ -472,7 +522,13 @@ class TriggerValidator:
                               z)
 
             if z>=z_critical:
-                triggers_validated.add(t)
+                triggers_with_z.append((t, z))
+        
+        # Sort the triggers by their z-scores in descending order
+        sorted_triggers_with_z = sorted(triggers_with_z, key=lambda x: x[1], reverse=True)
+
+        # Extract the sorted triggers
+        sorted_triggers = [trigger for trigger, _ in sorted_triggers_with_z]
 
         return list(triggers_validated)
 

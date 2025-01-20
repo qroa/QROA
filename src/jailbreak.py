@@ -46,9 +46,15 @@ class JailBreak:
         self.triggers_validate_path = os.path.join(self.results_path, "triggers_validate.json")
 
     def _load_embedding_model(self, model_path):
-        tokenizer = AutoTokenizer.from_pretrained(model_path)
-        model = AutoModelForCausalLM.from_pretrained(model_path)
-        tokenizer.pad_token_id = tokenizer.unk_token_id
+        if 'bert' in model_path:
+            from transformers import BertTokenizer, BertModel
+            tokenizer = BertTokenizer.from_pretrained(model_path)
+            model = BertModel.from_pretrained(model_path)
+            tokenizer.pad_token_id = tokenizer.unk_token_id
+        else: 
+            tokenizer = AutoTokenizer.from_pretrained(model_path)
+            model = AutoModelForCausalLM.from_pretrained(model_path)
+            tokenizer.pad_token_id = tokenizer.unk_token_id
 
         with torch.no_grad():
             ref_emb = model.get_input_embeddings().weight.data

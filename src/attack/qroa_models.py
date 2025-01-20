@@ -83,8 +83,8 @@ class AcquisitionFunction(nn.Module):
         self.len_coordinates = len_coordinates
         self.device = device
         self.indices = torch.arange(0, max_dim).long().to(device)
+        self.counts = torch.ones_like(self.indices).float().to(device)
         self.tokenizer_surrogate_model = tokenizer_surrogate_model
-        self.str_ids_ignore = []
         self.word_list = self.tokenizer_surrogate_model.batch_decode(
             list(self.tokenizer_surrogate_model.vocab.values())
         )
@@ -99,100 +99,40 @@ class AcquisitionFunction(nn.Module):
             add_special_tokens=False,
             truncation=True,
         ).to(self.device)
+    
+    def _encode_batch(self, batch):
+
+        return self.tokenizer_surrogate_model(
+                    batch,
+                    return_tensors="pt",
+                    max_length=self.len_coordinates,
+                    padding="max_length",
+                    add_special_tokens=False,
+                    truncation=True,
+                ).to(self.device)['input_ids']
 
     def forward(self, surrogate_model, input_string, coordinate, num_samples):
 
-        # Solution 0 : QROA
-        # with torch.no_grad():
-        
-        #     str_id = self._encode_string(input_string)
-                
-        #     inputs = str_id.repeat(self.max_dim, 1)
-        #     inputs[:, coordinate] = self.indices
-        #     predictions = surrogate_model(inputs).T
- 
-        #     top_indices = (
-        #         torch.topk(predictions, num_samples).indices.view(-1).int()
-        #     )
+        input_string = [input_string]
 
-        #     top_inputs = inputs[top_indices, :]
-        #     top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-        #     top_strings = top_strings + [input_string]
-
-        
-        # Solution 1 : one token random coordinate
-        # with torch.no_grad():
-        
-        #     str_id = self._encode_string(input_string)
-
-        #     batch_size = 5*self.max_dim
-        #     inputs = str_id.repeat(batch_size, 1)
-
-        #     random_coordinates = torch.randint(
-        #         0, self.len_coordinates, (batch_size,), device=self.device
-        #     )
-
-        #     random_indices = torch.randint(
-        #         0, len(self.indices), (batch_size,), device=self.device
-        #     )
-
-        #     inputs[torch.arange(batch_size), random_coordinates] = random_indices
-
-        #     predictions = surrogate_model(inputs).T
- 
-        #     top_indices = (
-        #         torch.topk(predictions, num_samples).indices.view(-1).int()
-        #     )
-
-        #     top_inputs = inputs[top_indices, :]
-        #     top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-        #     top_strings = top_strings + [input_string]
-
-
-        # Solution 2 : multiple token multiple coordinates
         with torch.no_grad():
-            # for _ in range(3): # Debug
 
-        
-            str_id = self._encode_string(input_string)
+            inputs = []
+            batch_size = self.max_dim//5
+            for s in input_string:
+                str_id = self._encode_string(s)
+                inputs.append(str_id.repeat(batch_size//len(input_string), 1))
+            inputs = torch.cat(inputs, dim=0)
+            batch_size = inputs.shape[0]
 
-            batch_size = 5*self.max_dim
-            # batch_size = 1 # Debug
-            inputs = str_id.repeat(batch_size, 1)
-            # inputs_copy = inputs  # Keep original inputs for comparison (Debug)
+            for coordinate in range(self.len_coordinates):
 
-            # Randomly decide the number of tokens to modify for each batch row
-            num_modifications = torch.randint(
-                1, self.len_coordinates//2, (batch_size,), device=self.device
-            )
-            # print("Number of modifications for each row:", num_modifications.tolist()) # Debug
+                random_rows = torch.randint(0, 2, (batch_size,), device=self.device)
+                indices_where_one = torch.nonzero(random_rows == 1, as_tuple=True)[0]
+                random_indices = torch.randint(0, len(self.indices), (len(indices_where_one) ,), device=self.device)
+                inputs[indices_where_one, coordinate] = self.indices[random_indices]
 
-            # Generate random values for each coordinate in the batch
-            random_values = torch.rand(batch_size, self.len_coordinates, device=self.device)
-
-            # For each row, select the top `num_modifications` smallest random values as True
-            thresholds = torch.topk(random_values, num_modifications.max(), dim=1, largest=False).values[:, -1:]
-
-            # Create the modification mask by comparing random values to thresholds
-            modification_mask = random_values <= thresholds
-            # print("Modification mask (True -> modify):") # Debug
-            # print(modification_mask.cpu().numpy())  # Convert for easier visualization debug
-
-            # Generate random replacement values
-            random_replacements = self.indices[
-                torch.randint(0, self.indices.size(0), (batch_size, self.len_coordinates), device=self.device)
-            ]
-            # print("Random replacement values (before modification):") # Debug
-            # print(random_replacements.cpu().numpy()) # Debug
-
-            # Apply modifications using the mask
-            inputs = torch.where(modification_mask, random_replacements, inputs)
             inputs = torch.unique(inputs, dim=0)
-
-            # print("Original inputs:") # Debug
-            # print(inputs_copy) # Debug
-            # print("Modified inputs:") # Debug
-            # print(inputs) # Debug
 
             predictions = surrogate_model(inputs).T
 
@@ -202,149 +142,6 @@ class AcquisitionFunction(nn.Module):
 
             top_inputs = inputs[top_indices, :]
             top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-            top_strings = top_strings + [input_string]
-
-
-
-        # Solution 3 : two tokens fixed locations
-        # with torch.no_grad():
-        
-        #     str_id = self._encode_string(input_string)
-
-        #     batch_size = 5*self.max_dim
-        #     inputs = str_id.repeat(batch_size, 1)
-
-        #     # Define a fixed number of tokens to modify
-        #     tokens_to_modify = 2
-
-        #     # Randomly select token indices to modify (same for all rows in the batch)
-        #     random_coordinates = torch.randperm(self.len_coordinates, device=self.device)[:tokens_to_modify]
-
-        #     # Generate random replacement values for the selected coordinates
-        #     random_replacements = self.indices[
-        #         torch.randint(0, self.indices.size(0), (batch_size, tokens_to_modify), device=self.device)
-        #     ]
-
-        #     # Apply the modifications to the 'inputs' tensor at the 'random_coordinates'
-        #     inputs[:, random_coordinates] = random_replacements
-
-        #     predictions = surrogate_model(inputs).T
- 
-        #     top_indices = (
-        #         torch.topk(predictions, num_samples).indices.view(-1).int()
-        #     )
-
-        #     top_inputs = inputs[top_indices, :]
-        #     top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-        #     top_strings = top_strings + [input_string]
-
-        # # Solution 4
-        # with torch.no_grad():
-        
-        #     str_id = self._encode_string(input_string)
-
-        #     batch_size = 5*self.max_dim
-        #     inputs = str_id.repeat(batch_size, 1)
-
-        #     # Generate sequential indices for the batch size
-        #     coordinate_indices = torch.arange(
-        #         self.len_coordinates, 
-        #         device=self.device
-        #         ).repeat(
-        #             batch_size // self.len_coordinates + 1
-        #             )[:batch_size]
-
-        #     # Random replacement values for each coordinate
-        #     random_indices = torch.randint(
-        #         0, len(self.indices), (batch_size,), device=self.device
-        #         )
-
-        #     # Replace one coordinate per batch row
-        #     inputs[torch.arange(batch_size), coordinate_indices] = random_indices
-
-        #     predictions = surrogate_model(inputs).T
- 
-        #     top_indices = (
-        #         torch.topk(predictions, num_samples).indices.view(-1).int()
-        #     )
-
-        #     top_inputs = inputs[top_indices, :]
-        #     top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-        #     top_strings = top_strings + [input_string]
-
-
-        # Solution 5 : Sequential multitoken change
-        # current_mod_count = 0
-        # with torch.no_grad():
-        #     # for _ in range(10): # Debug
-
-        #     # Encode the input string into a tensor
-        #     str_id = self._encode_string(input_string)
-
-        #     # Batch size (assuming a single batch here for simplicity, can be adjusted later)
-        #     batch_size = 5 * self.max_dim
-        #     # batch_size = 1  # Debug
-
-        #     # Repeat the encoded input across the batch
-        #     inputs = str_id.repeat(batch_size, 1)
-        #     inputs_copy = inputs
-
-        #     # Sequentially increase the number of token modifications
-        #     max_modifications = self.len_coordinates // 2
-        #     # Determine the current number of modifications
-        #     num_modifications = (current_mod_count % max_modifications) + 1
-
-        #     # Update to keep track of the number of modifications for the next iteration
-        #     if current_mod_count >= 5:
-        #         current_mod_count = 0
-        #     else : 
-        #         current_mod_count += 1  
-            
-        #     # print(f"Number of tokens to modify: {num_modifications}")  # Debug
-
-        #     # Generate random values for each coordinate in the batch
-        #     random_values = torch.rand(batch_size, self.len_coordinates, device=self.device)
-
-        #     # For each row, select the `num_modifications` smallest random coordinates
-        #     thresholds = torch.topk(random_values, num_modifications, dim=1, largest=False).values[:, -1:]
-            
-        #     # Create the modification mask by comparing random values to the thresholds
-        #     modification_mask = random_values <= thresholds
-
-        #     # Debug: Print the modification mask
-        #     # print("Modification mask (True -> modify):") # Debug
-        #     # print(modification_mask.cpu().numpy()) # Debug
-
-        #     # Generate random replacement values for modified positions
-        #     random_replacements = self.indices[
-        #         torch.randint(0, self.indices.size(0), (batch_size, self.len_coordinates), device=self.device)
-        #     ]
-            
-        #     # Debug: Print random replacement values before modification
-        #     # print("Sequential replacement values (before modification):") # Debug
-        #     # print(random_replacements.cpu().numpy()) # Debug
-
-        #     # Apply modifications using the mask
-        #     inputs = torch.where(modification_mask, random_replacements, inputs)
-
-        #     # Debug: Show original and modified inputs
-        #     # print("Original inputs:") # Debug
-        #     # print(inputs_copy.cpu().numpy()) # Debug
-        #     # print("Modified inputs:") # Debug
-        #     # print(inputs.cpu().numpy()) # Debug
-
-        #     # Ensure unique rows in the batch
-        #     inputs = torch.unique(inputs, dim=0)
-        
-        #     predictions = surrogate_model(inputs).T
-    
-        #     top_indices = (
-        #         torch.topk(predictions, num_samples).indices.view(-1).int()
-        #     )
-
-        #     top_inputs = inputs[top_indices, :]
-        #     top_strings = self.tokenizer_surrogate_model.batch_decode(top_inputs)
-        #     top_strings = top_strings + [input_string]
-
+            top_strings = top_strings + input_string
 
         return top_strings
