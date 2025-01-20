@@ -389,9 +389,11 @@ class TriggerGenerator:
 
     def _plot_umap(self):
         # logging_generator.json contains the triggers generated and its associated score among other attributes
-        file_path = f'../logs/{self.model_name}/logging_generator.csv'
-        with open(file_path, 'r') as f:
-            df = pd.read_csv(f)
+        # file_path = f'../logs/{self.model_name}/logging_generator.csv'
+        # with open(file_path, 'r') as f:
+        #     df = pd.read_csv(f)
+        
+        df = self.return_logging()
 
         df['average_cumulative_score'] = df['average_score'].cumsum() / (df.index + 1)
 
