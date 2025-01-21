@@ -504,8 +504,6 @@ class TriggerValidator:
     
     def validate(self, instruction: str, triggers: List[str]) -> List[str]:
         triggers_with_z: List[Tuple[str, float]] = [] # List to store triggers and their z-scores
-        
-        triggers_validated: Set[str] = set()
                     
         for t in tqdm(triggers): 
         
@@ -533,7 +531,7 @@ class TriggerValidator:
         # Extract the sorted triggers
         sorted_triggers = [trigger for trigger, _ in sorted_triggers_with_z]
 
-        return list(triggers_validated)
+        return list(sorted_triggers)
 
 
     def run(self, instruction: str, triggers: List[str]) -> List[str]:
