@@ -4,7 +4,6 @@ import concurrent.futures
 from openai import OpenAI
 from fastchat.conversation import get_conv_template
 from mistralai import Mistral
-# from mistralai.models.chat_completion import ChatMessage
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 from huggingface_hub import login
@@ -12,9 +11,11 @@ from huggingface_hub import login
 from src.models.base import Model
 from src.global_constants import MAX_PARALLELISM_LLM_MODELS, PROJECT_DIR
 
+
 class HuggingFaceModel(Model):
     """
-    HuggingFaceModel is a class that represents a Hugging Face model for text generation.
+    HuggingFaceModel is a class that represents a Hugging Face model for text
+    generation.
 
     Args:
         auth_token (str): The authentication token for the Hugging Face model.
@@ -23,7 +24,8 @@ class HuggingFaceModel(Model):
         model_name (str): The name of the Hugging Face model.
         temperature (float): The temperature value for text generation.
         top_p (float): The top-p value for text generation.
-        apply_defense_methods (bool): Whether to apply defense methods during text generation.
+        apply_defense_methods (bool): Whether to apply defense methods during 
+        text generation.
     """
 
     model_details = {
@@ -31,6 +33,7 @@ class HuggingFaceModel(Model):
         "llama2_hf": ("meta-llama/Llama-2-7b-hf", "llama-2"),
         "vicuna_hf": ("lmsys/vicuna-7b-v1.3", "vicuna_v1.1"),
         "mistral_hf": ("mistralai/Mistral-7B-Instruct-v0.3", "mistral"),
+        "qwen_hf": ("Qwen/Qwen2.5-7B-Instruct", "qwen"),
         "falcon_hf": ("tiiuae/falcon-7b-instruct", "falcon"),
         "ministral-8b-instruct": (f"{PROJECT_DIR}/models/Ministral-8B-Instruct-2410", "mistral"),
         "mistral_nemo": ("mistralai/Mistral-Nemo-Instruct-2407", "mistral"),
@@ -45,7 +48,12 @@ class HuggingFaceModel(Model):
                  top_p: float,
                  apply_defense_methods: bool):
         
-        super().__init__(auth_token, device, system_prompt, apply_defense_methods)
+        super().__init__(
+            auth_token,
+            device,
+            system_prompt,
+            apply_defense_methods
+        )
 
         path, template_name = self.model_details[model_name]
         print(path, template_name)
@@ -91,7 +99,17 @@ class HuggingFaceModel(Model):
         for text in prompts:
             if self.template_name == "llama-2":
                 system_template = f"<s><s>[INST] <<SYS>>\n{self.system_prompt}\n<</SYS>>\n\n{text}[/INST]"
-                input_prompts.append(system_template) 
+                input_prompts.append(system_template)
+            elif self.template_name == "qwen":
+                messages = [
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": text}
+                ]
+                input_prompts.append(self.tokenizer.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                    add_generation_prompt=True
+                ))
             else: 
                 conv = get_conv_template(self.template_name)
                 conv.set_system_message(self.system_prompt)
@@ -100,7 +118,7 @@ class HuggingFaceModel(Model):
                 input_prompts.append(conv.get_prompt())
 
         return input_prompts
-    
+
     def internal_generate(self, prompts, max_tokens):
         """
         Generate text using the Hugging Face model.
