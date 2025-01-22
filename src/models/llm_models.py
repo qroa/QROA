@@ -122,7 +122,7 @@ class HuggingFaceModel(Model):
             {
                 "max_new_tokens": max_tokens,
                 "pad_token_id": self.tokenizer.pad_token_id,
-                "do_sample": True,
+                "do_sample": self.temperature != 0,
                 "temperature": self.temperature,
                 "top_p": self.top_p,
             }

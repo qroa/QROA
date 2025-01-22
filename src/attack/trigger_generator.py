@@ -234,7 +234,7 @@ class TriggerGenerator:
                         'average_score': self.h[trigger],
                         'nb_test': self.n[trigger],
                         'epoch': epoch,
-                        'budget': self.N,
+                        'budget': sum(self.n.values()),
                         'loss': self.loss.item()}  
 
         df_dictionary = pd.DataFrame([logging_json])
