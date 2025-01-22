@@ -328,7 +328,7 @@ class TriggerGenerator:
 
                 prompt = instruction+trigger
                 progress_bar.set_description(f"Score : {self.h[trigger]}, Trigger : {[trigger]}, Loss: {self.loss:.4f}, Max n: {max_n}")
-                print()
+                # print()
 
                 if (self.h[trigger]>self.threshold) and (self.temperature==0):
                         break
