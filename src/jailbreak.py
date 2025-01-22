@@ -98,9 +98,9 @@ class JailBreak:
                                                 self.reference_embedding, 
                                                 self.tokenizer_surrogate_model)
             
-            self.trigger_validator = TriggerValidator(self.model, 
-                                                self.device, 
-                                                self.config)
+            # self.trigger_validator = TriggerValidator(self.model, 
+            #                                     self.device, 
+            #                                     self.config)
             
             triggers[instruction] = self.trigger_generator.run(instruction)
 
@@ -110,12 +110,12 @@ class JailBreak:
             with open(self.triggers_path, 'w') as f:
                 json.dump(triggers, f)
 
-            triggers_validate[instruction] = self.trigger_validator.run(instruction, triggers[instruction])
+            # triggers_validate[instruction] = self.trigger_validator.run(instruction, triggers[instruction])
 
-            logging_validator = pd.concat([logging_validator, self.trigger_validator.return_logging()], ignore_index=True)
-            logging_validator.to_json(self.logging_validator_path)
-            logging_validator.to_csv(self.logging_validator_path_csv, index=False)
-            with open(self.triggers_validate_path, 'w') as f:
-                json.dump(triggers_validate, f)
+            # logging_validator = pd.concat([logging_validator, self.trigger_validator.return_logging()], ignore_index=True)
+            # logging_validator.to_json(self.logging_validator_path)
+            # logging_validator.to_csv(self.logging_validator_path_csv, index=False)
+            # with open(self.triggers_validate_path, 'w') as f:
+            #     json.dump(triggers_validate, f)
 
         return  triggers, triggers_validate

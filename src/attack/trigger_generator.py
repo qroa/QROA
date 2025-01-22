@@ -332,19 +332,22 @@ class TriggerGenerator:
 
                 if (self.h[trigger]>self.threshold) and (self.temperature==0):
                         break
-                    # resampled_triggers = [trigger]*self.nb_samples
-                    # score_array = self._eval_triggers(instruction,
-                    #                                  resampled_triggers)    
+                
+                if (self.h[trigger]>self.threshold):
 
-                    # th = self.threshold
+                    resampled_triggers = [trigger]*self.nb_samples
+                    score_array = self._eval_triggers(instruction,
+                                                        resampled_triggers)    
 
-                    # mean = score_array.mean().item()
-                    # std = score_array.std().item()
-                    # z = (mean - th)/(std/np.sqrt(self.nb_samples))
+                    th = self.threshold
+
+                    mean = score_array.mean().item()
+                    std = score_array.std().item()
+                    z = (mean - th)/(std/np.sqrt(self.nb_samples))
                     # print(f'z: {z}, mean: {mean}')
-                    # z_critical = stats.norm.ppf(1-self.p_value) 
-                    # if z>=z_critical:
-                    #    break
+                    z_critical = stats.norm.ppf(1-self.p_value) 
+                    if z>=z_critical:
+                        break
 
             return list(self.best_triggers)
 
