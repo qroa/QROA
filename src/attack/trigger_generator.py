@@ -189,7 +189,7 @@ class TriggerGenerator:
 
     def _eval_triggers(self, list_instruction: List[str], triggers: List[str]) -> torch.Tensor:
 
-        instructions = random.choices(list_instruction, len(triggers))
+        instructions = random.choices(list_instruction, k=len(triggers))
         prompts = [i + t for i, t in zip(instructions, triggers)]
         generations = self.model.generate(
             prompts,
@@ -477,7 +477,7 @@ class TriggerValidator:
 
     def _eval_triggers(self, list_instruction: List[str], triggers: List[str]) -> torch.Tensor:
 
-        instructions = random.choices(list_instruction, len(triggers))
+        instructions = random.choices(list_instruction, k=len(triggers))
         prompts = [i + t for i,t in zip(instructions, triggers)]
         generations = self.model.generate(
             prompts,
