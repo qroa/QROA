@@ -220,9 +220,9 @@ class TriggerGenerator:
 
         return score_array
 
-    def _add_logging(self, 
-                     list_instruction: List[str], 
-                     trigger: str, 
+    def _add_logging(self,
+                     list_instruction: List[str],
+                     trigger: str,
                      epoch: int) -> None:
 
         for instruction in list_instruction:
@@ -240,7 +240,7 @@ class TriggerGenerator:
                             'nb_test': self.n[trigger],
                             'epoch': epoch,
                             'budget': self.N,
-                            'loss': self.loss.item()}  
+                            'loss': self.loss.item()}
 
         df_dictionary = pd.DataFrame([logging_json])
         self.logging = pd.concat([self.logging, df_dictionary], ignore_index=True)
@@ -337,21 +337,25 @@ class TriggerGenerator:
                 progress_bar.set_description(f"Score : {self.h[trigger]}, Trigger : {trigger}, Loss: {self.loss:.4f}, Max n: {max_n}")
                 print()
 
-                if (self.h[trigger]>self.threshold) and (self.temperature==0):
+                if (self.h[trigger] > self.threshold) and (self.temperature==0):
                         break
-                    # resampled_triggers = [trigger]*self.nb_samples
-                    # score_array = self._eval_triggers(instruction,
-                    #                                  resampled_triggers)    
 
-                    # th = self.threshold
+                if (self.h[trigger] > self.threshold):
+                    resampled_triggers = [trigger]*self.nb_samples
+                    score_array = self._eval_triggers(
+                        list_instruction,
+                        resampled_triggers
+                    )
 
-                    # mean = score_array.mean().item()
-                    # std = score_array.std().item()
-                    # z = (mean - th)/(std/np.sqrt(self.nb_samples))
-                    # print(f'z: {z}, mean: {mean}')
-                    # z_critical = stats.norm.ppf(1-self.p_value) 
-                    # if z>=z_critical:
-                    #    break
+                    th = self.threshold
+
+                    mean = score_array.mean().item()
+                    std = score_array.std().item()
+                    z = (mean - th)/(std/np.sqrt(self.nb_samples))
+                    print(f'z: {z}, mean: {mean}')
+                    z_critical = stats.norm.ppf(1-self.p_value) 
+                    if z >= z_critical:
+                       break
 
             return list(self.best_triggers)
 
