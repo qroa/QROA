@@ -189,22 +189,34 @@ class TriggerGenerator:
 
     def _eval_triggers(self, list_instruction: List[str], triggers: List[str]) -> torch.Tensor:
 
-        scores = []
+        instructions = random.sample(list_instruction, len(triggers))
+        prompts = [i + t for i, t in zip(instructions, triggers)]
+        generations = self.model.generate(
+            prompts,
+            max_tokens=self.max_generations_tokens
+        )
+        score_array = self.scoring_function.score(
+            instructions,
+            generations,
+            prompts
+        )
 
-        for instruction in list_instruction: 
-            # Create a list of full prompts by appending each trigger to the instruction
-            instructions = [instruction] * len(triggers)
-            prompts = [instructions[i] + t for i, t in enumerate(triggers)]
+        # scores = []
 
-            # Use the language model to generate responses for each prompt
-            generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+        # # for instruction in list_instruction: 
+        # #     # Create a list of full prompts by appending each trigger to the instruction
+        # #     instructions = [instruction] * len(triggers)
+        # #     prompts = [instructions[i] + t for i, t in enumerate(triggers)]
 
-            # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
-            score_instruction = self.scoring_function.score(instructions, generations, prompts)
+        # #     # Use the language model to generate responses for each prompt
+        # #     generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
 
-            scores.append(score_instruction)
+        # #     # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
+        # #     score_instruction = self.scoring_function.score(instructions, generations, prompts)
 
-        score_array = torch.stack(scores).mean(dim=0)
+        # #     scores.append(score_instruction)
+
+        # score_array = torch.stack(scores).mean(dim=0)
 
         return score_array
 
@@ -465,26 +477,38 @@ class TriggerValidator:
 
     def _eval_triggers(self, list_instruction: List[str], triggers: List[str]) -> torch.Tensor:
 
-        scores = []
+        instructions = random.sample(list_instruction, len(triggers))
+        prompts = [i + t for i,t in zip(instructions, triggers)]
+        generations = self.model.generate(
+            prompts,
+            max_tokens=self.max_generations_tokens
+        )
+        score_array = self.scoring_function.score(
+            instructions,
+            generations,
+            prompts
+        )
 
-        for instruction in list_instruction: 
-            # Create a list of full prompts by appending each trigger to the instruction
-            instructions = [instruction] * len(triggers)
-            prompts = [instructions[i] + t for i, t in enumerate(triggers)]
+        # scores = []
 
-            # Use the language model to generate responses for each prompt
-            generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+        # # for instruction in list_instruction: 
+        # #     # Create a list of full prompts by appending each trigger to the instruction
+        # #     instructions = [instruction] * len(triggers)
+        # #     prompts = [instructions[i] + t for i, t in enumerate(triggers)]
 
-            # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
-            score_instruction = self.scoring_function.score(instructions, generations, prompts)
+        # #     # Use the language model to generate responses for each prompt
+        # #     generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
 
-            scores.append(score_instruction)
+        # #     # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
+        # #     score_instruction = self.scoring_function.score(instructions, generations, prompts)
 
-        score_array = torch.stack(scores).mean(dim=0)
+        # #     scores.append(score_instruction)
+
+        # score_array = torch.stack(scores).mean(dim=0)
 
         return score_array
-    
-    def _add_logging(self, 
+
+    def _add_logging(self,
                      list_instruction: List[str], 
                      trigger: str, 
                      mean: float, 
