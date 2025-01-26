@@ -122,9 +122,9 @@ class HarmEvalPreplexityScoring(ScoringFunction):
                 instruction_str = [instruction_str]
 
             pred_target=[f'USER: {s1} ASSISTANT: {s2}' for s1,s2 in zip(instruction_str, output_str)]                
-            x = self.sie_tokenizer(pred_target, 
-                                   padding=True, 
-                                   max_length=512, 
+            x = self.sie_tokenizer(pred_target,
+                                   padding=True,
+                                   max_length=512,
                                    truncation=True, 
                                    return_tensors="pt")
             x["input_ids"] = x["input_ids"].to(self.device)
