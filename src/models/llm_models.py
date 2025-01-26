@@ -225,7 +225,8 @@ class OpenaiModel(Model):
         "gpt-4o-2024-05-13",
         "gpt-4o-2024-08-06",
         "gpt-4-0613"
-        "gpt-4-turbo"}
+        "gpt-4-turbo",
+        "gpt-4-turbo-preview"}
     
     def __init__(
         self,
