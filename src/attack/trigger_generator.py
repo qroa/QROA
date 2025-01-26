@@ -201,30 +201,30 @@ class TriggerGenerator:
         #     prompts
         # )
 
-        instructions = []
-        prompts = []
-        for instruction in list_instruction:
-            instructions += [instruction] * len(triggers)
-            prompts += [instruction + t for t in triggers]
-
-        generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
-        scores = self.scoring_function.score(instructions, generations, prompts)
-        scores = [scores[i*len(triggers):(i+1)*len(triggers)] for i in range(len(list_instruction))]
-
-        # scores = []
-
+        # instructions = []
+        # prompts = []
         # for instruction in list_instruction:
-        #     # Create a list of full prompts by appending each trigger to the instruction
-        #     instructions = [instruction] * len(triggers)
-        #     prompts = [instructions[i] + t for i, t in enumerate(triggers)]
+        #     instructions += [instruction] * len(triggers)
+        #     prompts += [instruction + t for t in triggers]
 
-        #     # Use the language model to generate responses for each prompt
-        #     generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+        # generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+        # scores = self.scoring_function.score(instructions, generations, prompts)
+        # scores = [scores[i*len(triggers):(i+1)*len(triggers)] for i in range(len(list_instruction))]
 
-        #     # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
-        #     score_instruction = self.scoring_function.score(instructions, generations, prompts)
+        scores = []
 
-        #     scores.append(score_instruction)
+        for instruction in list_instruction:
+            # Create a list of full prompts by appending each trigger to the instruction
+            instructions = [instruction] * len(triggers)
+            prompts = [instructions[i] + t for i, t in enumerate(triggers)]
+
+            # Use the language model to generate responses for each prompt
+            generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+
+            # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
+            score_instruction = self.scoring_function.score(instructions, generations, prompts)
+
+            scores.append(score_instruction)
 
         score_array = torch.stack(scores).mean(dim=0)
 
@@ -503,30 +503,30 @@ class TriggerValidator:
         #     prompts
         # )
         
-        instructions = []
-        prompts = []
-        for instruction in list_instruction:
-            instructions += [instruction] * len(triggers)
-            prompts += [instruction + t for t in triggers]
-
-        generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
-        scores = self.scoring_function.score(instructions, generations, prompts)
-        scores = [scores[i*len(triggers):(i+1)*len(triggers)] for i in range(len(list_instruction))]
-
-        # scores = []
-
+        # instructions = []
+        # prompts = []
         # for instruction in list_instruction:
-        #     # Create a list of full prompts by appending each trigger to the instruction
-        #     instructions = [instruction] * len(triggers)
-        #     prompts = [instructions[i] + t for i, t in enumerate(triggers)]
+        #     instructions += [instruction] * len(triggers)
+        #     prompts += [instruction + t for t in triggers]
 
-        #     # Use the language model to generate responses for each prompt
-        #     generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+        # generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+        # scores = self.scoring_function.score(instructions, generations, prompts)
+        # scores = [scores[i*len(triggers):(i+1)*len(triggers)] for i in range(len(list_instruction))]
 
-        #     # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
-        #     score_instruction = self.scoring_function.score(instructions, generations, prompts)
+        scores = []
 
-        #     scores.append(score_instruction)
+        for instruction in list_instruction:
+            # Create a list of full prompts by appending each trigger to the instruction
+            instructions = [instruction] * len(triggers)
+            prompts = [instructions[i] + t for i, t in enumerate(triggers)]
+
+            # Use the language model to generate responses for each prompt
+            generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+
+            # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
+            score_instruction = self.scoring_function.score(instructions, generations, prompts)
+
+            scores.append(score_instruction)
 
         score_array = torch.stack(scores).mean(dim=0)
 
