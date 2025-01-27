@@ -458,7 +458,7 @@ class TriggerGenerator:
         print(f"Generate triggers for instruction: {list_instruction}")
         triggers = self._generate_triggers(list_instruction)
         self._plot_score_loss_n()
-        self._plot_umap()
+        # self._plot_umap()
 
         return triggers
 
