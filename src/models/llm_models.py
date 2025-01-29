@@ -220,6 +220,7 @@ class OpenaiModel(Model):
         "gpt-3.5-turbo-1106",
         "gpt-3.5-turbo-0125",
         "gpt-4-turbo",
+        "gpt-4o-mini",
         "chatgpt-4o-latest",
         "gpt-4o-2024-11-20",
         "gpt-4o-2024-05-13",
