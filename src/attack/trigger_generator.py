@@ -204,6 +204,7 @@ class TriggerGenerator:
 
         instructions = []
         prompts = []
+        max_retries = 3
         for instruction in list_instruction:
             instructions += [instruction] * len(triggers)
             prompts += [instruction + t for t in triggers]
@@ -218,7 +219,7 @@ class TriggerGenerator:
                 break
             except Exception as e:
                 print(f"Attempt {attempt + 1} failed: {e}")
-                if attempt < 2:
+                if attempt < max_retries - 1:
                     time.sleep(2)  # Wait before retrying
                 else:
                     print("Max retries reached. Returning None.")
@@ -522,6 +523,7 @@ class TriggerValidator:
 
         instructions = []
         prompts = []
+        max_retries = 3
         for instruction in list_instruction:
             instructions += [instruction] * len(triggers)
             prompts += [instruction + t for t in triggers]
@@ -533,7 +535,7 @@ class TriggerValidator:
                 break
             except Exception as e:
                 print(f"Attempt {attempt + 1} failed: {e}")
-                if attempt < 2:
+                if attempt < max_retries - 1:
                     time.sleep(2)  # Wait before retrying
                 else:
                     print("Max retries reached. Returning None.")

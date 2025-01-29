@@ -259,7 +259,7 @@ class OpenaiModel(Model):
         """
         prompts = [
             [{"role": "system", "content": self.system_prompt},
-            {"role": "user", "content": prompt}]
+             {"role": "user", "content": prompt}]
             for prompt in prompts
         ]
 
