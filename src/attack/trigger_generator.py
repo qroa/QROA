@@ -225,7 +225,6 @@ class TriggerGenerator:
                     print("Max retries reached. Returning None.")
                     raise ValueError("Max retries reached. Returning None.")
 
-        generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
         scores = self.scoring_function.score(instructions, generations, prompts)
         scores = [scores[i*len(triggers):(i+1)*len(triggers)] for i in range(len(list_instruction))]
 
@@ -541,7 +540,6 @@ class TriggerValidator:
                     print("Max retries reached. Returning None.")
                     raise ValueError("Max retries reached. Returning None.")
 
-        generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
         scores = self.scoring_function.score(instructions, generations, prompts)
         scores = [scores[i*len(triggers):(i+1)*len(triggers)] for i in range(len(list_instruction))]
 
