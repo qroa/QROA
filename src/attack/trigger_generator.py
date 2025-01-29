@@ -2,6 +2,7 @@ from typing import List, Dict, Set, Tuple
 import random
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+import time 
 
 import torch
 from torch.nn import  MSELoss
@@ -209,8 +210,22 @@ class TriggerGenerator:
         prompts = [instruction + t for t in triggers]   # Combine the instruction with each trigger
 
         # Use the language model to generate responses for each prompt
-        generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+        max_retries = 3
+        for attempt in range(max_retries):
 
+            try:
+                generations = self.model.generate(
+                    prompts,
+                    max_tokens=self.max_generations_tokens
+                )
+                break
+            except Exception as e:
+                print(f"Attempt {attempt + 1} failed: {e}")
+                if attempt < max_retries - 1:
+                    time.sleep(2)  # Wait before retrying
+                else:
+                    raise ValueError("Max retries reached. Returning None.")
+ 
         # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
         score_array = self.scoring_function.score(instructions, generations, prompts)
 
@@ -477,7 +492,23 @@ class TriggerValidator:
 
         instructions = [instruction for _ in triggers]
         prompts = [instruction + t for t in triggers]
-        generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+
+        max_retries = 3
+        for attempt in range(max_retries):
+
+            try:
+                generations = self.model.generate(
+                    prompts,
+                    max_tokens=self.max_generations_tokens
+                )
+                break
+            except Exception as e:
+                print(f"Attempt {attempt + 1} failed: {e}")
+                if attempt < max_retries - 1:
+                    time.sleep(2)  # Wait before retrying
+                else:
+                    raise ValueError("Max retries reached. Returning None.")
+
         score_array = self.scoring_function.score(instructions, generations, prompts)
 
         return score_array
