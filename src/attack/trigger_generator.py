@@ -228,7 +228,7 @@ class TriggerGenerator:
         scores = self.scoring_function.score(instructions, generations, prompts)
         scores = [scores[i*len(triggers):(i+1)*len(triggers)] for i in range(len(list_instruction))]
 
-        scores = []
+        # scores = []
 
         # for instruction in list_instruction:
         #     # Create a list of full prompts by appending each trigger to the instruction
@@ -243,7 +243,7 @@ class TriggerGenerator:
 
         #     scores.append(score_instruction)
 
-        # score_array = torch.stack(scores).mean(dim=0)
+        score_array = torch.stack(scores).mean(dim=0)
 
         return score_array
 
