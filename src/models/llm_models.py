@@ -281,3 +281,75 @@ class OpenaiModel(Model):
                 results[result_position] = future.result()
 
         return results
+
+
+class HFOpenaiModel(Model):
+    """
+    OpenaiModel is a class that represents an OpenAI model for text generation.
+
+    Args:
+        auth_token (str): The authentication token for the OpenAI model.
+        device (str): The device to run the model on.
+        system_prompt (str): The system prompt to use.
+        apply_defense_methods (bool): Whether to apply defense methods during text generation.
+    """
+
+    model_details = {
+        "tgi"}
+    
+    def __init__(
+        self,
+        auth_token: str,
+        device: str,
+        system_prompt: str,
+        model_name: str,
+        temperature: float,
+        top_p: float,
+        apply_defense_methods: bool,
+    ):
+        super().__init__(auth_token, device, system_prompt, apply_defense_methods)
+
+        self.client = OpenAI(
+            base_url="https://cwx8spawq0fcf47f.us-east-1.aws.endpoints.huggingface.cloud/v1/",
+            api_key=auth_token
+        )
+        self.max_parallelism = MAX_PARALLELISM_LLM_MODELS
+        self.temperature = temperature
+        self.top_p = top_p
+        self.model_name = model_name
+
+    def internal_generate(self, prompts, max_tokens):
+        """
+        Generate text using the OpenAI model.
+
+        Args:
+            prompts (List[str]): The prompts for text generation.
+            max_tokens (int): The maximum number of tokens to generate.
+
+        Returns:
+            List[str]: The generated text.
+        """
+
+        prompts = [
+            [{"role": "user", "content": prompt}]
+            for prompt in prompts
+        ]
+
+        def fetch_generation(prompt):
+            output = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=prompt,
+                max_tokens=max_tokens,
+                temperature=self.temperature,
+                top_p=self.top_p
+            )
+            return output.choices[0].message.content
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_parallelism) as executor:
+            futures = {executor.submit(fetch_generation, prompt): i for i, prompt in enumerate(prompts)}
+            results = [None] * len(prompts)
+            for future in concurrent.futures.as_completed(futures):
+                result_position = futures[future]
+                results[result_position] = future.result()
+
+        return results
