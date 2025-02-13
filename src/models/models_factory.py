@@ -1,5 +1,5 @@
 from src.models.base import Model
-from src.models.llm_models import HuggingFaceModel, OpenaiModel, MistralModel
+from src.models.llm_models import HuggingFaceModel, OpenaiModel, MistralModel, HFOpenaiModel
 
 def get_model(model_name: str,
               apply_defense_methods: bool,
@@ -48,6 +48,16 @@ def get_model(model_name: str,
         return model
     elif model_name in MistralModel.model_details:
         return MistralModel(
+            auth_token=auth_token,
+            device=device,
+            system_prompt=system_prompt,
+            model_name=model_name,
+            temperature=temperature,
+            top_p=top_p,
+            apply_defense_methods=apply_defense_methods
+        )
+    elif model_name in HFOpenaiModel.model_details:
+        return HFOpenaiModel(
             auth_token=auth_token,
             device=device,
             system_prompt=system_prompt,
