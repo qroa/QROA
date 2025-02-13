@@ -12,6 +12,7 @@ from huggingface_hub import login
 from src.models.base import Model
 from src.global_constants import MAX_PARALLELISM_LLM_MODELS, PROJECT_DIR
 
+
 class HuggingFaceModel(Model):
     """
     HuggingFaceModel is a class that represents a Hugging Face model for text generation.
@@ -32,7 +33,7 @@ class HuggingFaceModel(Model):
         "vicuna_hf": ("lmsys/vicuna-7b-v1.3", "vicuna_v1.1"),
         "mistral_hf": ("mistralai/Mistral-7B-Instruct-v0.1", "mistral"),
         "falcon_hf": ("tiiuae/falcon-7b-instruct", "falcon"),
-        "ministral-8b-instruct": (f"{PROJECT_DIR}/models/Ministral-8B-Instruct-2410", "mistral"),
+        "ministral_hf": ("mistralai/Ministral-8B-Instruct-2410", "mistral"),
     }
 
     def __init__(self, 
