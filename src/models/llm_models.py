@@ -33,10 +33,10 @@ class HuggingFaceModel(Model):
         "llama2_hf": ("meta-llama/Llama-2-7b-hf", "llama-2"),
         "vicuna_hf": ("lmsys/vicuna-7b-v1.3", "vicuna_v1.1"),
         "mistral_hf": ("mistralai/Mistral-7B-Instruct-v0.3", "mistral"),
-        "qwen_hf": ("Qwen/Qwen2.5-7B-Instruct", "qwen"),
+        "qwen_hf": ("Qwen/Qwen2-7B-Instruct", "qwen"),
         "falcon_hf": ("tiiuae/falcon-7b-instruct", "falcon"),
-        "ministral-8b-instruct": (f"{PROJECT_DIR}/models/Ministral-8B-Instruct-2410", "mistral"),
         "mistral_nemo": ("mistralai/Mistral-Nemo-Instruct-2407", "mistral"),
+        "ministral_hf": ("mistralai/Ministral-8B-Instruct-2410", "mistral"),
     }
 
     def __init__(self, 
