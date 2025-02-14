@@ -96,6 +96,7 @@ class HuggingFaceModel(Model):
             List[str]: The processed prompts.
         """
         input_prompts = []
+        print(self.template_name)
         for text in prompts:
             if self.template_name == "llama-2":
                 system_template = f"<s><s>[INST] <<SYS>>\n{self.system_prompt}\n<</SYS>>\n\n{text}[/INST]"
