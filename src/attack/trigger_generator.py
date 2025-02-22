@@ -79,7 +79,10 @@ class TriggerGenerator:
         self.token_count = reference_embedding.shape[0]  # Number of tokens in the embedding.
 
         # Initializing surrogate and acquisition models for optimization:
-        self.surrogate_model = SurrogateModel(self.coordinates_length, self.reference_embedding).to(self.device)
+        self.surrogate_model = SurrogateModel(
+            self.coordinates_length,
+            self.reference_embedding
+        ).to(self.device)
         self.acquisition_function = AcquisitionFunction(self.token_count, self.coordinates_length, self.device, self.tokenizer_surrogate_model)
 
         # Optimizer for the surrogate model:
@@ -155,14 +158,18 @@ class TriggerGenerator:
             truncation=True,
         ).to(self.device)['input_ids']
 
-    def _update_memory(self, 
-                       triggers: List[str], 
-                       scores: torch.Tensor) -> None:
+    def _update_memory(
+        self,
+        triggers: List[str],
+        scores: torch.Tensor
+    ) -> None:
         """
-        Updates the memory with the scores of tested triggers to aid in future sampling decisions and learning steps.
+        Updates the memory with the scores of tested triggers to aid in future
+        sampling decisions and learning steps.
 
-        This method takes a list of triggers and their corresponding effectiveness scores, updating the historical data
-        that is used for optimizing the surrogate model.
+        This method takes a list of triggers and their corresponding
+        effectiveness scores, updating the historical data that is used
+        for optimizing the surrogate model.
 
         Args:
             triggers (list[str]): The triggers that were recently tested.
@@ -177,7 +184,7 @@ class TriggerGenerator:
             if z in self.h:
                 # Update the historical score using a running average
                 self.h[z] = (self.n[z] * self.h[z] + s_z) / (self.n[z] + 1)
-                self.n[z] += 1  
+                self.n[z] += 1
             else:
                 # Initialize the score and count for new triggers
                 self.h[z] = s_z
@@ -190,44 +197,6 @@ class TriggerGenerator:
 
     def _eval_triggers(self, list_instruction: List[str], triggers: List[str]) -> torch.Tensor:
 
-        # instructions = random.choices(list_instruction, k=len(triggers))
-        # prompts = [i + t for i, t in zip(instructions, triggers)]
-        # generations = self.model.generate(
-        #     prompts,
-        #     max_tokens=self.max_generations_tokens
-        # )
-        # score_array = self.scoring_function.score(
-        #     instructions,
-        #     generations,
-        #     prompts
-        # )
-
-        # instructions = []
-        # prompts = []
-        # max_retries = 3
-        # for instruction in list_instruction:
-        #     instructions += [instruction] * len(triggers)
-        #     prompts += [instruction + t for t in triggers]
-
-        # for attempt in range(max_retries):
-
-        #     try:
-        #         generations = self.model.generate(
-        #             prompts,
-        #             max_tokens=self.max_generations_tokens
-        #         )
-        #         break
-        #     except Exception as e:
-        #         print(f"Attempt {attempt + 1} failed: {e}")
-        #         if attempt < max_retries - 1:
-        #             time.sleep(2)  # Wait before retrying
-        #         else:
-        #             print("Max retries reached. Returning None.")
-        #             raise ValueError("Max retries reached. Returning None.")
-
-        # scores = self.scoring_function.score(instructions, generations, prompts)
-        # scores = [scores[i*len(triggers):(i+1)*len(triggers)] for i in range(len(list_instruction))]
-
         scores = []
 
         for instruction in list_instruction:
@@ -236,10 +205,18 @@ class TriggerGenerator:
             prompts = [instructions[i] + t for i, t in enumerate(triggers)]
 
             # Use the language model to generate responses for each prompt
-            generations = self.model.generate(prompts, max_tokens=self.max_generations_tokens)
+            generations = self.model.generate(
+                prompts,
+                max_tokens=self.max_generations_tokens
+            )
 
-            # Apply the scoring function to evaluate how well the responses meet the criteria defined by the scoring function
-            score_instruction = self.scoring_function.score(instructions, generations, prompts)
+            # Apply the scoring function to evaluate how well the responses
+            # meet the criteria defined by the scoring function
+            score_instruction = self.scoring_function.score(
+                instructions,
+                generations,
+                prompts
+            )
 
             scores.append(score_instruction)
 
@@ -270,7 +247,10 @@ class TriggerGenerator:
                             'loss': self.loss.item()}
 
         df_dictionary = pd.DataFrame([logging_json])
-        self.logging = pd.concat([self.logging, df_dictionary], ignore_index=True)
+        self.logging = pd.concat(
+            [self.logging, df_dictionary],
+            ignore_index=True
+        )
 
     def return_logging(self):
         
@@ -278,17 +258,22 @@ class TriggerGenerator:
     
     def _generate_triggers(self, list_instruction: List[str]) -> List[str]:
         """
-        Generates and optimizes a list of triggers for a given instruction to maximize the likelihood of inducing specific behavior in a language model.
+        Generates and optimizes a list of triggers for a given instruction to
+        maximize the likelihood of inducing specific behavior in a language
+        model.
 
         Args:
-            list_instruction (List[str]): The list of malicious instructions for which triggers are generated.
+            list_instruction (List[str]): The list of malicious instructions
+            for which triggers are generated.
 
         Returns:
-            List[str]: A list of optimized triggers that have been found to effectively manipulate model responses.
+            List[str]: A list of optimized triggers that have been found to
+            effectively manipulate model responses.
         """    
 
         # Extend initial triggers with random generation
-        # The factor of 5 is used to make sure the generated string is long enough before it's cut down to the required length.
+        # The factor of 5 is used to make sure the generated string is long
+        # enough before it's cut down to the required length.
         # Initialization
         self.triggers_init += ["".join(random.choice(self.word_list) for _ in range(self.coordinates_length * 5))]
         trigger_ids = self._encode(self.triggers_init)
@@ -350,16 +335,16 @@ class TriggerGenerator:
                     self.best_triggers.add(trigger)
 
                 # Log current epoch results
-                self._add_logging(list_instruction,
-                                trigger,
-                                current_epoch)
+                self._add_logging(
+                    list_instruction,
+                    trigger,
+                    current_epoch
+                )
             
                 # Log metrics for the current epoch
                 self.scores_history.append(self.h[trigger])
                 self.losses_history.append(self.loss.cpu().item())
                 self.max_n_history.append(max_n)
-
-                prompt = list_instruction+[trigger]
 
                 progress_bar.set_description(f"Score : {self.h[trigger]}, Trigger : {trigger}, Loss: {self.loss:.4f}, Max n: {max_n}")
                 print()
