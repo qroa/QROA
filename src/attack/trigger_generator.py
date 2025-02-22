@@ -1,11 +1,11 @@
-from typing import List, Dict, Set, Tuple
+from typing import List, Dict, Tuple
 import random
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-import time 
+import time
 
 import torch
-from torch.nn import  MSELoss
+from torch.nn import MSELoss
 import pandas as pd
 import numpy as np
 import scipy.stats as stats
@@ -15,14 +15,14 @@ from sentence_transformers import SentenceTransformer
 
 from src.attack.score_function import scoring_function_factory
 from src.attack.qroa_models import SurrogateModel, AcquisitionFunction
-from src.utils import calculate_ucb, calculate_log_prob
+from src.utils import calculate_ucb
 from src.global_constants import PERPLEXITY_MODEL_NAME
 
 
 class TriggerGenerator:
     """
     A class for generating triggers using a surrogate model.
-    
+
     This class generates triggers that can be used to exploit large language models (LLMs)
     through a black-box query-only interaction. The triggers are optimized to compel the LLM 
     to generate harmful content based on malicious instructions.
@@ -35,10 +35,10 @@ class TriggerGenerator:
                  reference_embedding: torch.Tensor,
                  tokenizer_surrogate_model: any
                  ):
-        
+
         """
         Initialize the TriggerGenerator class with all necessary configurations and models.
-        
+
         Args:
             model (torch model): The language model to be used for generating text responses.
             device (torch device): The computing device (CPU or GPU) where the model is deployed.
@@ -67,21 +67,41 @@ class TriggerGenerator:
         self.threshold = config['threshold']
         self.temperature = config['temperature']
 
-        self.nb_samples = config["nb_samples_per_trigger"]  # Number of samples per trigger for validation.
-        self.threshold = config["threshold"]  # Threshold to determine trigger validity.
-        self.p_value = config["p_value"]  # Statistical significance level.
+        # Number of samples per trigger for validation.
+        self.nb_samples = config["nb_samples_per_trigger"]
 
-        self.reference_embedding = reference_embedding  # Reference Embeddings used by the surrogate model.
-        self.tokenizer_surrogate_model = tokenizer_surrogate_model  # Tokenizer for processing text inputs.
+        # Threshold to determine trigger validity.
+        self.threshold = config["threshold"]
+
+        # Statistical significance level.
+        self.p_value = config["p_value"]
+
+        # Reference Embeddings used by the surrogate model.
+        self.reference_embedding = reference_embedding
+
+        # Tokenizer for processing text inputs.
+        self.tokenizer_surrogate_model = tokenizer_surrogate_model
 
         # Scoring function to evaluate trigger effectiveness:
-        self.scoring_function = scoring_function_factory(self.scoring_type, self.device)
+        self.scoring_function = scoring_function_factory(
+            self.scoring_type,
+            self.device
+        )
 
-        self.token_count = reference_embedding.shape[0]  # Number of tokens in the embedding.
+        # Number of tokens in the embedding.
+        self.token_count = reference_embedding.shape[0]
 
         # Initializing surrogate and acquisition models for optimization:
-        self.surrogate_model = SurrogateModel(self.coordinates_length, self.reference_embedding).to(self.device)
-        self.acquisition_function = AcquisitionFunction(self.token_count, self.coordinates_length, self.device, self.tokenizer_surrogate_model)
+        self.surrogate_model = SurrogateModel(
+            self.coordinates_length,
+            self.reference_embedding
+        ).to(self.device)
+        self.acquisition_function = AcquisitionFunction(
+            self.token_count,
+            self.coordinates_length,
+            self.device,
+            self.tokenizer_surrogate_model
+        )
 
         # Optimizer for the surrogate model:
         self.opt1 = torch.optim.Adam(
@@ -90,14 +110,16 @@ class TriggerGenerator:
             weight_decay=self.weight_decay,
         )
 
-        self.learning_loss = MSELoss()  # Loss function for optimization steps.
+        # Loss function for optimization steps.
+        self.learning_loss = MSELoss()
 
-        self.coordinates = list(range(self.coordinates_length))  # Indexes for coordinate descent.
+        # Indexes for coordinate descent.
+        self.coordinates = list(range(self.coordinates_length))
         self.word_list = self.tokenizer_surrogate_model.batch_decode(
             list(self.tokenizer_surrogate_model.vocab.values())
         )
 
-        self.surrogate_model.train() 
+        self.surrogate_model.train()
 
         self.D = []  # List to store triggers for sampling.
         self.best_triggers = set()  # Best performing triggers.
@@ -189,9 +211,14 @@ class TriggerGenerator:
         while len(self.D) > self.max_d:
             self.D.pop(0)
 
-    def _eval_triggers(self, instruction: str, triggers: List[str]) -> torch.Tensor:
+    def _eval_triggers(
+        self, 
+        instruction: str,
+        triggers: List[str]
+    ) -> torch.Tensor:
         """
-        Evaluates a list of triggers by appending them to an instruction and observing the language model's response.
+        Evaluates a list of triggers by appending them to an instruction
+        and observing the language model's response.
 
         This function operates by generating a combined prompt from the provided instruction and each trigger, then querying
         the language model to generate text based on these prompts. The responses are evaluated using a scoring function
@@ -313,19 +340,32 @@ class TriggerGenerator:
                     trigger = max(self.h, key=lambda key: ucb_b[key])
 
                     # Select a random token position to modify
-                    current_coordinate = self.coordinates[current_epoch % self.coordinates_length]
+                    current_coordinate = self.coordinates[
+                        current_epoch % self.coordinates_length
+                    ]
 
-                    # Generate top k new trigger variants by modifying the current trigger at the chosen position
-                    top_k_triggers = self.acquisition_function(self.surrogate_model, trigger, current_coordinate, self.topk)
+                    # Generate top k new trigger variants by modifying 
+                    # the current trigger at the chosen position
+                    top_k_triggers = self.acquisition_function(
+                        self.surrogate_model,
+                        trigger,
+                        current_coordinate,
+                        self.topk
+                    )
 
-                    # Eval Phase Phase 
-                    score_array = self._eval_triggers(instruction, top_k_triggers)
+                    # Eval Phase Phase
+                    score_array = self._eval_triggers(
+                        instruction,
+                        top_k_triggers
+                    )
+
                     # Update memory with new triggers and their scores
                     self._update_memory(top_k_triggers, score_array)
+
                     # Calculate maximum number of times any trigger has been sampled
                     max_n = max(self.n.values())
 
-                #Perform learning phase: optimize surrogate model parameters using a sampled batch of triggers
+                # Perform learning phase: optimize surrogate model parameters using a sampled batch of triggers
                 self.loss = self._optimization_step()
                 # Check if the currently selected best trigger meets the threshold for success
                 if self.h[trigger] >= self.threshold:
@@ -341,18 +381,23 @@ class TriggerGenerator:
                 self.losses_history.append(self.loss.cpu().item())
                 self.max_n_history.append(max_n)
 
-                prompt = instruction+trigger
-                progress_bar.set_description(f"Score : {self.h[trigger]}, Trigger : {[trigger]}, Loss: {self.loss:.4f}, Max n: {max_n}")
-                # print()
+                progress_bar.set_description(
+                    f"Score : {self.h[trigger]}, "
+                    f"Trigger : {[trigger]}, "
+                    f"Loss: {self.loss:.4f}, "
+                    f"Max n: {max_n}"
+                )
 
-                if (self.h[trigger]>self.threshold) and (self.temperature==0):
-                        break
-                
-                if (self.h[trigger]>self.threshold):
+                if (self.h[trigger] > self.threshold) and (self.temperature == 0):
+                    break
+
+                if (self.h[trigger] > self.threshold):
 
                     resampled_triggers = [trigger]*self.nb_samples
-                    score_array = self._eval_triggers(instruction,
-                                                        resampled_triggers)    
+                    score_array = self._eval_triggers(
+                        instruction,
+                        resampled_triggers
+                    )    
 
                     th = self.threshold
 
