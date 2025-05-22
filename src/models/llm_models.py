@@ -32,6 +32,7 @@ class HuggingFaceModel(Model):
         "vicuna_hf": ("lmsys/vicuna-7b-v1.3", "vicuna_v1.1"),
         "mistral_hf": ("mistralai/Mistral-7B-Instruct-v0.1", "mistral"),
         "falcon_hf": ("tiiuae/falcon-7b-instruct", "falcon"),
+        "pythia_hf": ("EleutherAI/pythia-14m", "falcon")
     }
 
     def __init__(self, 

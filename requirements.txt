@@ -3,12 +3,14 @@ transformers==4.46.3
 accelerate==0.30.1
 openai==1.55.0
 mistralai==1.2.3
-fastchat==0.2.20
+# fastchat
 tqdm==4.67.1
 pandas==2.2.3
-scipy==1.14.1
+scipy
 tiktoken==0.8.0
 blobfile==3.0.0
 protobuf==5.28.3
-openssl==3.4.0
+# openssl==3.4.0
 SentencePiece==0.2.0
+pytest
+python-dotenv
